@@ -1,39 +1,48 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# eq_visulaization
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+A Flutter package for visualizing mathematical equations on a coordinate system using a Marching Squares inspired approach.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Visualize any mathematical function of the form `f(x, y) = 0`.
+- Customizable coordinate system with grid and axes.
+- Support for custom colors and stroke widths.
+- Smooth drawing with anti-aliasing.
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+Add the package to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  eq_visulaization:
+    git: https://github.com/yourusername/eq_visulaization.git
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
 ```dart
-const like = 'sample';
+import 'package:eq_visulaization/eq_visulaization.dart';
+
+// Define your function
+double circle(double x, double y) {
+  return x * x + y * y - (100 * 100); // x^2 + y^2 = 100^2
+}
+
+// Use the widget
+EquationPainterWidget(
+  function: circle,
+  width: 300,
+  height: 300,
+  graphLineColor: Colors.blue,
+  showGrid: true,
+)
 ```
+
+## Example
+
+Check the `example` folder for a comprehensive demo showcasing different mathematical curves.
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+This package uses a grid-based approach (Marching Squares) to approximate the curves from the given mathematical function. You can adjust the `steps` constant in the source code if you need higher or lower precision.
