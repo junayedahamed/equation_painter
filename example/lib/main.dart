@@ -35,7 +35,7 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
 
   double _circle(double x, double y) {
     // x^2 + y^2 - r^2 = 0
-    return x * x + y * y - (80 * 80);
+    return x * x + y * y - 100000;
   }
 
   double _heart(double x, double y) {
@@ -101,8 +101,8 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
                   padding: const EdgeInsets.all(20.0),
                   child: EquationPainterWidget(
                     function: _currentFunction,
-                    width: 400,
-                    height: 400,
+                    width: 800,
+                    height: 800,
                     graphLineColor: Colors.cyanAccent,
                     graphLineStrokeWidth: 3.0,
                     gridColor: Colors.white10,
@@ -139,7 +139,7 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              // const SizedBox(height: 20),
               const Text(
                 'Explore mathematical curves using Marching Squares',
                 style: TextStyle(color: Colors.white54, fontSize: 12),

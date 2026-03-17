@@ -128,25 +128,43 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
 
   @override
   Widget build(BuildContext context) {
+    // We use a Stack to separate the static background (Grid/Axis)
+    // from the animated foreground (the Graph).
     return SizedBox(
       width: widget.width,
       height: widget.height,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: _EquationPainter(
-              segments: _segments ?? [],
-              animationProgress: _controller.value,
-              graphLineColor: widget.graphLineColor,
-              graphLineStrokeWidth: widget.graphLineStrokeWidth,
-              showGrid: widget.showGrid,
-              showAxis: widget.showAxis,
-              gridColor: widget.gridColor,
-              gridStrokeWidth: widget.gridStrokeWidth,
+      child: Stack(
+        children: [
+          // Static Background Layer
+          if (widget.showGrid || widget.showAxis)
+            RepaintBoundary(
+              child: CustomPaint(
+                size: Size(widget.width, widget.height),
+                painter: _BackgroundPainter(
+                  showGrid: widget.showGrid,
+                  showAxis: widget.showAxis,
+                  gridColor: widget.gridColor,
+                  gridStrokeWidth: widget.gridStrokeWidth,
+                ),
+              ),
             ),
-          );
-        },
+
+          // Animated Foreground Layer
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              return CustomPaint(
+                size: Size(widget.width, widget.height),
+                painter: _GraphPainter(
+                  segments: _segments ?? [],
+                  animationProgress: _controller.value,
+                  graphLineColor: widget.graphLineColor,
+                  graphLineStrokeWidth: widget.graphLineStrokeWidth,
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -159,21 +177,14 @@ class _LineSegment {
   _LineSegment(this.p1, this.p2, this.distance);
 }
 
-class _EquationPainter extends CustomPainter {
-  final List<_LineSegment> segments;
-  final double animationProgress;
-  final Color graphLineColor;
-  final double graphLineStrokeWidth;
+/// Painter for static elements like Grid and Axis
+class _BackgroundPainter extends CustomPainter {
   final bool showGrid;
   final bool showAxis;
   final Color gridColor;
   final double gridStrokeWidth;
 
-  _EquationPainter({
-    required this.segments,
-    required this.animationProgress,
-    required this.graphLineColor,
-    required this.graphLineStrokeWidth,
+  _BackgroundPainter({
     required this.showGrid,
     required this.showAxis,
     required this.gridColor,
@@ -205,11 +216,41 @@ class _EquationPainter extends CustomPainter {
       canvas.drawLine(Offset(w / 2, 0), Offset(w / 2, h), paint);
       canvas.drawLine(Offset(0, h / 2), Offset(w, h / 2), paint);
     }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) {
+    return oldDelegate.showGrid != showGrid ||
+        oldDelegate.showAxis != showAxis ||
+        oldDelegate.gridColor != gridColor ||
+        oldDelegate.gridStrokeWidth != gridStrokeWidth;
+  }
+}
+
+/// Painter for the animated graph segments
+class _GraphPainter extends CustomPainter {
+  final List<_LineSegment> segments;
+  final double animationProgress;
+  final Color graphLineColor;
+  final double graphLineStrokeWidth;
+
+  _GraphPainter({
+    required this.segments,
+    required this.animationProgress,
+    required this.graphLineColor,
+    required this.graphLineStrokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (segments.isEmpty) return;
+
+    final w = size.width;
+    final h = size.height;
 
     // Coordinate mapping: center of canvas is (0,0)
     Offset f2m(Offset c) => Offset(w / 2 + c.dx, -c.dy + h / 2);
 
-    // 3. Draw Equation Segments
     final equationPaint = Paint()
       ..color = graphLineColor
       ..strokeWidth = graphLineStrokeWidth
@@ -217,10 +258,6 @@ class _EquationPainter extends CustomPainter {
       ..isAntiAlias = true
       ..strokeCap = StrokeCap.round;
 
-    if (segments.isEmpty) return;
-
-    // Draw only segments within the animation progress
-    // Since they are sorted by distance, we can use a subset
     final countToDraw = (segments.length * animationProgress).toInt();
     for (int i = 0; i < countToDraw; i++) {
       final segment = segments[i];
@@ -229,7 +266,10 @@ class _EquationPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _EquationPainter oldDelegate) =>
-      oldDelegate.animationProgress != animationProgress ||
-      oldDelegate.segments != segments;
+  bool shouldRepaint(covariant _GraphPainter oldDelegate) {
+    return oldDelegate.animationProgress != animationProgress ||
+        oldDelegate.segments != segments ||
+        oldDelegate.graphLineColor != graphLineColor ||
+        oldDelegate.graphLineStrokeWidth != graphLineStrokeWidth;
+  }
 }
