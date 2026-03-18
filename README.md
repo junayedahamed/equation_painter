@@ -1,4 +1,5 @@
 # 📈 eq_visulaization
+ By Junayed Ahamed
 
 A powerful and performant Flutter package for visualizing multiple mathematical equations simultaneously with beautiful animations and customizable coordinate systems.
 
@@ -9,9 +10,10 @@ A powerful and performant Flutter package for visualizing multiple mathematical 
 
 ---
 
-<div id="english">
+<details open id="english">
+<summary><b>🇬🇧 English Documentation (Click to Expand/Collapse)</b></summary>
 
-## 🇬🇧 English Documentation
+<br>
 
 [![Preview](assets/preview.png)](assets/preview.png)
 
@@ -26,12 +28,12 @@ A powerful and performant Flutter package for visualizing multiple mathematical 
 
 ### 📸 Screenshots
 
-| | |
-|---|---|
-| ![Screenshot 1](assets/screenshots/Screenshot%20from%202026-03-19%2001-31-47.png) | ![Screenshot 2](assets/screenshots/Screenshot%20from%202026-03-19%2002-10-56.png) |
-| ![Screenshot 3](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-10.png) | ![Screenshot 4](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-19.png) |
-| ![Screenshot 5](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png) | ![Screenshot 6](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-39.png) |
-
+![Screenshot 1](assets/screenshots/Screenshot%20from%202026-03-19%2001-31-47.png)
+![Screenshot 2](assets/screenshots/Screenshot%20from%202026-03-19%2002-10-56.png)
+![Screenshot 3](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-10.png)
+![Screenshot 4](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-19.png)
+![Screenshot 5](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png)
+![Screenshot 6](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-39.png)
 
 ### 🚀 Getting Started
 
@@ -101,13 +103,13 @@ EquationPainterWidget(
 - `linearX`: Revealed left to right.
 - `linearY`: Revealed top to bottom.
 
----
+</details>
 
-</div>
 
-<div id="bangla">
+<details id="bangla">
+<summary><b>🇧🇩 বাংলা ডকুমেন্টেশন (বিস্তারিত দেখতে ক্লিক করুন)</b></summary>
 
-## 🇧🇩 বাংলা ডকুমেন্টেশন
+<br>
 
 ### বৈশিষ্ট্যসমূহ
 
@@ -120,12 +122,12 @@ EquationPainterWidget(
 
 ### 📸 স্ক্রিনশটসমূহ
 
-| | |
-|---|---|
-| ![স্ক্রিনশট ১](assets/screenshots/Screenshot%20from%202026-03-19%2001-31-47.png) | ![স্ক্রিনশট ২](assets/screenshots/Screenshot%20from%202026-03-19%2002-10-56.png) |
-| ![স্ক্রিনশট ৩](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-10.png) | ![স্ক্রিনশট ৪](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-19.png) |
-| ![স্ক্রিনশট ৫](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png) | ![স্ক্রিনশট ৬](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-39.png) |
-
+![স্ক্রিনশট ১](assets/screenshots/Screenshot%20from%202026-03-19%2001-31-47.png)
+![স্ক্রিনশট ২](assets/screenshots/Screenshot%20from%202026-03-19%2002-10-56.png)
+![স্ক্রিনশট ৩](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-10.png)
+![স্ক্রিনশট ৪](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-19.png)
+![স্ক্রিনশট ৫](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png)
+![স্ক্রিনশট ৬](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-39.png)
 
 ### 🚀 শুরু করা যাক
 
@@ -195,9 +197,7 @@ EquationPainterWidget(
 - `linearX`: বাম থেকে ডানে প্রকাশ পায়।
 - `linearY`: উপর থেকে নিচে প্রকাশ পায়।
 
----
-
-</div>
+</details>
 
 ## 📄 License
 

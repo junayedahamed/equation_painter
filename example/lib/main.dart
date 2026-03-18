@@ -245,7 +245,7 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(28),
                       child: EquationPainterWidget(
-                        key: ValueKey('${_selectedExample.name}_${_alignment}'),
+                        key: ValueKey('${_selectedExample.name}_$_alignment'),
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.width,
                         alignment: _alignment,

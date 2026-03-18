@@ -1,8 +1,17 @@
 # Installing eq_visulaization
 
+### 🌐 Select Language / ভাষা নির্বাচন
+**[English](#english) | [বাংলা](#bangla)**
+
+---
+
+<details open id="english">
+<summary><b>🇬🇧 English Installation (Click to Expand)</b></summary>
+<br>
+
 You can add the `eq_visulaization` package to your Flutter project using several methods.
 
-## Method 1: Using the Flutter CLI (Recommended)
+### Method 1: Using the Flutter CLI (Recommended)
 
 Run the following command in your terminal while in the root folder of your project:
 
@@ -10,7 +19,7 @@ Run the following command in your terminal while in the root folder of your proj
 flutter pub add eq_visulaization
 ```
 
-## Method 2: Manually via `pubspec.yaml`
+### Method 2: Manually via `pubspec.yaml`
 
 1. Open your project's `pubspec.yaml` file.
 2. Add `eq_visulaization` under the `dependencies` section:
@@ -27,7 +36,7 @@ dependencies:
 flutter pub get
 ```
 
-## Method 3: Using a Local Path (For Development)
+### Method 3: Using a Local Path (For Development)
 
 If you have downloaded the source code and want to use it as a local package:
 
@@ -37,17 +46,20 @@ dependencies:
     path: /path/to/eq_visulaization # Replace with your actual path
 ```
 
-## Importing the Package
+### Importing the Package
 
 Once installed, you can import and use the package in your Dart code:
 
 ```dart
 import 'package:eq_visulaization/eq_visulaization.dart';
 ```
+</details>
 
----
+<br>
 
-## 🇧🇩 ইন্সটল করার নিয়ম (Bengali)
+<details id="bangla">
+<summary><b>🇧🇩 ইন্সটল করার নিয়ম (বিস্তারিত দেখতে ক্লিক করুন)</b></summary>
+<br>
 
 আপনি নিচের সহজ ধাপগুলো অনুসরণ করে আপনার ফ্লাটার প্রজেক্টে `eq_visulaization` প্যাকেজটি যোগ করতে পারেন।
 
@@ -70,3 +82,5 @@ flutter pub add eq_visulaization
 ```dart
 import 'package:eq_visulaization/eq_visulaization.dart';
 ```
+</details>
+
