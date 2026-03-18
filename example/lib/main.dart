@@ -139,6 +139,8 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Text(" y - 50 * sin(x / 50)", style: TextStyle(fontSize: 25)),
+              SizedBox(height: 15),
               Card(
                 elevation: 15,
                 shadowColor: Colors.black54,
@@ -150,12 +152,36 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
                   borderRadius: BorderRadius.circular(30),
                   child: EquationPainterWidget(
                     equations: [
+                      // EquationConfig(
+                      //   maxX: 250,
+                      //   maxY: 250,
+                      //   minX: -250,
+                      //   minY: -250,
+                      //   function: (double a, double b) =>
+                      //       tan(a / 10) + tan(b / 10) - sin(a / b) + cos(a / b),
+                      //   animationType: AnimationType.linearX,
+                      //   color: Colors.green,
+                      //   strokeWidth: 2,
+                      // ),
+                      // EquationConfig(
+                      //   maxX: 250,
+                      //   maxY: 250,
+                      //   minX: -250,
+                      //   minY: -250,
+                      //   function: (double a, double b) =>
+                      //       tan(a / 10) - tan(b / 10) + sin(a / b) + cos(a / b),
+                      //   animationType: AnimationType.linearX,
+                      //   color: Colors.blue,
+                      //   strokeWidth: 2,
+                      // ),
                       EquationConfig(
-                        function: (double a, double b) =>
-                            tan(a / 10) - tan(b / 10) - sin(a / b) + cos(b / a),
-                        animationType: AnimationType.linearX,
-                        color: Colors.red,
-                        strokeWidth: 2,
+                        // maxX: 40,
+                        // maxY: 200,
+                        // minY: -100,
+                        // minX: -50,
+                        strokeWidth: 5,
+                        animationType: AnimationType.sequential,
+                        function: (x, y) => y - 50 * sin(x / 15),
                       ),
                     ],
                     width: 700,
@@ -166,62 +192,62 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
-              Wrap(
-                spacing: 20,
-                runSpacing: 20,
-                alignment: WrapAlignment.center,
-                children: [
-                  _buildControlPanel(
-                    title: 'Equations',
-                    child: DropdownButton<String>(
-                      value: _selectedEquation,
-                      items:
-                          [
-                            'Triple Circle',
-                            'Heart & Sine',
-                            'Butterfly Garden',
-                          ].map((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                      onChanged: (value) =>
-                          setState(() => _selectedEquation = value!),
-                    ),
-                  ),
-                  _buildControlPanel(
-                    title: 'View',
-                    child: DropdownButton<Alignment>(
-                      value: _alignment,
-                      items: const [
-                        DropdownMenuItem(
-                          value: Alignment.center,
-                          child: Text('Center (All)'),
-                        ),
-                        DropdownMenuItem(
-                          value: Alignment.bottomLeft,
-                          child: Text('1st Quadrant'),
-                        ),
-                        DropdownMenuItem(
-                          value: Alignment.bottomRight,
-                          child: Text('2nd Quadrant'),
-                        ),
-                        DropdownMenuItem(
-                          value: Alignment.topRight,
-                          child: Text('3rd Quadrant'),
-                        ),
-                        DropdownMenuItem(
-                          value: Alignment.topLeft,
-                          child: Text('4th Quadrant'),
-                        ),
-                      ],
-                      onChanged: (value) => setState(() => _alignment = value!),
-                    ),
-                  ),
-                ],
-              ),
+              // const SizedBox(height: 40),
+              // Wrap(
+              //   spacing: 20,
+              //   runSpacing: 20,
+              //   alignment: WrapAlignment.center,
+              //   children: [
+              //     _buildControlPanel(
+              //       title: 'Equations',
+              //       child: DropdownButton<String>(
+              //         value: _selectedEquation,
+              //         items:
+              //             [
+              //               'Triple Circle',
+              //               'Heart & Sine',
+              //               'Butterfly Garden',
+              //             ].map((String value) {
+              //               return DropdownMenuItem<String>(
+              //                 value: value,
+              //                 child: Text(value),
+              //               );
+              //             }).toList(),
+              //         onChanged: (value) =>
+              //             setState(() => _selectedEquation = value!),
+              //       ),
+              //     ),
+              //     _buildControlPanel(
+              //       title: 'View',
+              //       child: DropdownButton<Alignment>(
+              //         value: _alignment,
+              //         items: const [
+              //           DropdownMenuItem(
+              //             value: Alignment.center,
+              //             child: Text('Center (All)'),
+              //           ),
+              //           DropdownMenuItem(
+              //             value: Alignment.bottomLeft,
+              //             child: Text('1st Quadrant'),
+              //           ),
+              //           DropdownMenuItem(
+              //             value: Alignment.bottomRight,
+              //             child: Text('2nd Quadrant'),
+              //           ),
+              //           DropdownMenuItem(
+              //             value: Alignment.topRight,
+              //             child: Text('3rd Quadrant'),
+              //           ),
+              //           DropdownMenuItem(
+              //             value: Alignment.topLeft,
+              //             child: Text('4th Quadrant'),
+              //           ),
+              //         ],
+              //         onChanged: (value) => setState(() => _alignment = value!),
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),
@@ -229,22 +255,22 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
     );
   }
 
-  Widget _buildControlPanel({required String title, required Widget child}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(15),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(width: 15),
-          DropdownButtonHideUnderline(child: child),
-        ],
-      ),
-    );
-  }
+  // Widget _buildControlPanel({required String title, required Widget child}) {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white.withAlpha(15),
+  //       borderRadius: BorderRadius.circular(25),
+  //       border: Border.all(color: Colors.white10),
+  //     ),
+  //     child: Row(
+  //       mainAxisSize: MainAxisSize.min,
+  //       children: [
+  //         Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+  //         const SizedBox(width: 15),
+  //         DropdownButtonHideUnderline(child: child),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

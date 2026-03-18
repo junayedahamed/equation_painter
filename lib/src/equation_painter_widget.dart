@@ -119,9 +119,14 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
 
     if (!segmentsChanged) {
       for (int i = 0; i < widget.equations.length; i++) {
-        if (oldWidget.equations[i].function != widget.equations[i].function ||
-            oldWidget.equations[i].animationType !=
-                widget.equations[i].animationType) {
+        final eq = widget.equations[i];
+        final oldEq = oldWidget.equations[i];
+        if (eq.function != oldEq.function ||
+            eq.animationType != oldEq.animationType ||
+            eq.minX != oldEq.minX ||
+            eq.maxX != oldEq.maxX ||
+            eq.minY != oldEq.minY ||
+            eq.maxY != oldEq.maxY) {
           segmentsChanged = true;
           break;
         }
@@ -163,12 +168,23 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     final originX = (1 + widget.alignment.x) * w / 2;
     final originY = (1 + widget.alignment.y) * h / 2;
 
+    /// Flutter to math canvas Conversion []
     Offset f2m(Offset c) => Offset(originX + c.dx, originY - c.dy);
 
-    final minX = -(1 + widget.alignment.x) * w / 2;
-    final maxX = minX + w;
-    final minY = (1 + widget.alignment.y) * h / 2 - h;
-    final maxY = minY + h;
+    // Visible canvas range in mathematical units
+    final double canvasMinX = -(1 + widget.alignment.x) * w / 2;
+    final double canvasMaxX = canvasMinX + w;
+    final double canvasMinY = (1 + widget.alignment.y) * h / 2 - h;
+    final double canvasMaxY = canvasMinY + h;
+
+    // Final scanning range (intersection of canvas and config limits)
+    final minX = max(canvasMinX, config.minX ?? -double.infinity);
+    final maxX = min(canvasMaxX, config.maxX ?? double.infinity);
+    final minY = max(canvasMinY, config.minY ?? -double.infinity);
+    final maxY = min(canvasMaxY, config.maxY ?? double.infinity);
+
+    // If limits make it invisible, return empty
+    if (minX >= maxX || minY >= maxY) return [];
 
     final List<double> xValues = [];
     for (double x = minX; x <= maxX + steps; x += steps) {
