@@ -117,12 +117,12 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
                       animationDuration: const Duration(milliseconds: 2500),
                       equations: [
                         // A complex interference pattern
-                        EquationConfig(
-                          function: (x, y) => cos(x * y) - sin(x * x - y * y),
-                          color: Colors.greenAccent.withAlpha(153),
-                          strokeWidth: 1.5,
-                          animationType: AnimationType.linearX,
-                        ),
+                        // EquationConfig(
+                        //   function: (x, y) => cos(x * y) - sin(x * x - y * y),
+                        //   color: Colors.greenAccent.withAlpha(153),
+                        //   strokeWidth: 1.5,
+                        //   animationType: AnimationType.linearX,
+                        // ),
                         // A mirrored interference pattern
                         // EquationConfig(
                         //   function: (x, y) =>
