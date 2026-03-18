@@ -17,7 +17,8 @@ A powerful and performant Flutter package for visualizing multiple mathematical 
 
 ### Features
 
-- ✅ **Multi-equation Support**: Render multiple functions on a single canvas.
+- ✅ **Coordinate Labels**: Show numbers along axis to measure your functions.
+- ✅ **Configurable Units**: Define how many units each grid square represents (e.g., 1 square = 5 units).
 - ✅ **Dynamic Animations**: Choose from `radial`, `sequential`, `linearX`, or `linearY` animation styles.
 - ✅ **Customizable Coordinate System**: Toggle grids/axes, change colors, and adjust stroke widths.
 - ✅ **Origin Alignment**: Position the origin (0,0) anywhere (e.g., Center, BottomLeft for 1st Quadrant).
@@ -71,6 +72,9 @@ EquationPainterWidget(
 | `animate` | `bool` | `true` | Enable/disable entry animation. |
 | `animationType` | `AnimationType` | `radial` | Default animation style for equations. |
 | `alignment` | `Alignment` | `center` | Where the (0,0) point is located. |
+| `showNumbers` | `bool` | `true` | Show/hide coordinate values. |
+| `unitsPerSquare`| `double` | `1.0` | Value of one grid square in math units. |
+| `labelColor` | `Color` | `black54` | Color of the coordinate numbers. |
 
 #### `EquationConfig`
 | Property | Type | Description |
@@ -96,7 +100,8 @@ EquationPainterWidget(
 
 ### বৈশিষ্ট্যসমূহ
 
-- ✅ **একাধিক সমীকরণ সমর্থন**: একটি একক ক্যানভাসে একাধিক ফাংশন রেন্ডার করুন।
+- ✅ **স্থানাঙ্ক লেবেল**: ফাংশন পরিমাপ করার জন্য অক্ষে সংখ্যা প্রদর্শন করুন।
+- ✅ **কনফিগারেবল ইউনিট**: প্রতিটি গ্রিড স্কোয়ার কত ইউনিট উপস্থাপন করে তা নির্ধারণ করুন (যেমন: ১ স্কোয়ার = ৫ ইউনিট)।
 - ✅ **ডায়নামিক অ্যানিমেশন**: `radial`, `sequential`, `linearX`, অথবা `linearY` অ্যানিমেশন স্টাইল থেকে বেছে নিন।
 - ✅ **কাস্টমাইজযোগ্য কোঅর্ডিনেট সিস্টেম**: গ্রিড/অক্ষ (Axes) অন-অফ করা, রং পরিবর্তন এবং স্ট্রোক উইডথ অ্যাডজাস্ট করা যায়।
 - ✅ **অরিজিন অ্যালাইনমেন্ট**: অরিজিন (০,০) যেকোনো স্থানে স্থাপন করা যায় (যেমন: ১ম কোয়াড্র্যান্টের জন্য BottomLeft)।
@@ -150,6 +155,9 @@ EquationPainterWidget(
 | `animate` | `bool` | `true` | অ্যানিমেশন চালু বা বন্ধ করা। |
 | `animationType` | `AnimationType` | `radial` | সমীকরণের জন্য ডিফল্ট অ্যানিমেশন স্টাইল। |
 | `alignment` | `Alignment` | `center` | (০,০) বিন্দুটি কোথায় অবস্থিত হবে। |
+| `showNumbers` | `bool` | `true` | স্থানাঙ্ক সংখ্যা দেখানো বা লুকানো। |
+| `unitsPerSquare`| `double` | `1.0` | এক একটি গ্রিড স্কোয়ারের গাণিতিক মান। |
+| `labelColor` | `Color` | `black54` | স্থানাঙ্ক সংখ্যার রং। |
 
 #### `EquationConfig`
 | প্রপার্টি | টাইপ | বর্ণনা |

@@ -61,6 +61,16 @@ class EquationPainterWidget extends StatefulWidget {
   final bool animate;
   final Duration animationDuration;
 
+  /// Whether to show the coordinate numbers on the grid.
+  final bool showNumbers;
+
+  /// How many mathematical units one grid square (40 pixels) represents.
+  /// Defaults to 1.0.
+  final double unitsPerSquare;
+
+  /// The color of the coordinate numbers.
+  final Color labelColor;
+
   /// The style of animation used to reveal the graph.
   final AnimationType animationType;
 
@@ -81,6 +91,9 @@ class EquationPainterWidget extends StatefulWidget {
     this.animationDuration = const Duration(milliseconds: 1500),
     this.animationType = AnimationType.radial,
     this.alignment = Alignment.center,
+    this.showNumbers = true,
+    this.unitsPerSquare = 1.0,
+    this.labelColor = Colors.black54,
   });
 
   @override
@@ -139,7 +152,11 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
         _controller.reset();
         _controller.forward();
       }
-    } else if (oldWidget.animationDuration != widget.animationDuration) {
+    } else if (oldWidget.animationDuration != widget.animationDuration ||
+        oldWidget.unitsPerSquare != widget.unitsPerSquare) {
+      if (oldWidget.unitsPerSquare != widget.unitsPerSquare) {
+        _calculateAllSegments();
+      }
       _controller.duration = widget.animationDuration;
     }
   }
@@ -168,14 +185,19 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     final originX = (1 + widget.alignment.x) * w / 2;
     final originY = (1 + widget.alignment.y) * h / 2;
 
-    /// Flutter to math canvas Conversion []
-    Offset f2m(Offset c) => Offset(originX + c.dx, originY - c.dy);
+    final double pixelsPerUnit = 40.0 / widget.unitsPerSquare;
+
+    /// Flutter to math canvas Conversion [Math -> Flutter]
+    Offset f2m(Offset c) =>
+        Offset(originX + c.dx * pixelsPerUnit, originY - c.dy * pixelsPerUnit);
 
     // Visible canvas range in mathematical units
-    final double canvasMinX = -(1 + widget.alignment.x) * w / 2;
-    final double canvasMaxX = canvasMinX + w;
-    final double canvasMinY = (1 + widget.alignment.y) * h / 2 - h;
-    final double canvasMaxY = canvasMinY + h;
+    final double canvasMinX =
+        -(1 + widget.alignment.x) * w / (2 * pixelsPerUnit);
+    final double canvasMaxX = canvasMinX + w / pixelsPerUnit;
+    final double canvasMinY =
+        ((1 + widget.alignment.y) * h / 2 - h) / pixelsPerUnit;
+    final double canvasMaxY = canvasMinY + h / pixelsPerUnit;
 
     // Final scanning range (intersection of canvas and config limits)
     final minX = max(canvasMinX, config.minX ?? -double.infinity);
@@ -186,13 +208,15 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     // If limits make it invisible, return empty
     if (minX >= maxX || minY >= maxY) return [];
 
+    final double stepX = steps / pixelsPerUnit;
     final List<double> xValues = [];
-    for (double x = minX; x <= maxX + steps; x += steps) {
+    for (double x = minX; x <= maxX + stepX; x += stepX) {
       xValues.add(x);
     }
 
+    final double stepY = steps / pixelsPerUnit;
     final List<double> yValues = [];
-    for (double y = minY; y <= maxY + steps; y += steps) {
+    for (double y = minY; y <= maxY + stepY; y += stepY) {
       yValues.add(y);
     }
 
@@ -248,8 +272,8 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
           switch (animType) {
             case AnimationType.radial:
               dist =
-                  ((points[0].dx + points[1].dx) / 2).abs() +
-                  ((points[0].dy + points[1].dy) / 2).abs();
+                  (points[0].dx + points[1].dx).abs() +
+                  (points[0].dy + points[1].dy).abs();
               break;
             case AnimationType.linearX:
               dist = (points[0].dx + points[1].dx) / 2;
@@ -357,6 +381,9 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
                   gridColor: widget.gridColor,
                   gridStrokeWidth: widget.gridStrokeWidth,
                   alignment: widget.alignment,
+                  showNumbers: widget.showNumbers,
+                  unitsPerSquare: widget.unitsPerSquare,
+                  labelColor: widget.labelColor,
                 ),
               ),
             ),
@@ -393,6 +420,9 @@ class _BackgroundPainter extends CustomPainter {
   final Color gridColor;
   final double gridStrokeWidth;
   final Alignment alignment;
+  final bool showNumbers;
+  final double unitsPerSquare;
+  final Color labelColor;
 
   _BackgroundPainter({
     required this.showGrid,
@@ -400,6 +430,9 @@ class _BackgroundPainter extends CustomPainter {
     required this.gridColor,
     required this.gridStrokeWidth,
     required this.alignment,
+    required this.showNumbers,
+    required this.unitsPerSquare,
+    required this.labelColor,
   });
 
   @override
@@ -440,7 +473,81 @@ class _BackgroundPainter extends CustomPainter {
       if (originX >= 0 && originX <= w) {
         canvas.drawLine(Offset(originX, 0), Offset(originX, h), paint);
       }
+
+      if (showNumbers) {
+        _drawLabels(canvas, size, originX, originY);
+      }
     }
+  }
+
+  void _drawLabels(Canvas canvas, Size size, double originX, double originY) {
+    final w = size.width;
+    final h = size.height;
+
+    final textStyle = TextStyle(
+      color: labelColor,
+      fontSize: 10,
+      fontWeight: FontWeight.w500,
+    );
+
+    void drawText(String text, Offset pos, {bool isX = true}) {
+      final tp = TextPainter(
+        text: TextSpan(text: text, style: textStyle),
+        textDirection: TextDirection.ltr,
+      );
+      tp.layout();
+
+      // Offset for positioning
+      double dx = pos.dx;
+      double dy = pos.dy;
+
+      if (isX) {
+        dx -= tp.width / 2;
+        dy += 4; // Below the axis
+        // Keep within vertical bounds
+        if (dy + tp.height > h) dy -= (tp.height + 8);
+      } else {
+        dx += 4; // Right of the axis
+        dy -= tp.height / 2;
+        // Keep within horizontal bounds
+        if (dx + tp.width > w) dx -= (tp.width + 8);
+      }
+
+      tp.paint(canvas, Offset(dx, dy));
+    }
+
+    // X axis labels
+    int xCount = 1;
+    for (double x = originX + 40; x <= w; x += 40) {
+      final val = xCount * unitsPerSquare;
+      drawText(_format(val), Offset(x, originY), isX: true);
+      xCount++;
+    }
+    xCount = -1;
+    for (double x = originX - 40; x >= 0; x -= 40) {
+      final val = xCount * unitsPerSquare;
+      drawText(_format(val), Offset(x, originY), isX: true);
+      xCount--;
+    }
+
+    // Y axis labels
+    int yCount = 1;
+    for (double y = originY - 40; y >= 0; y -= 40) {
+      final val = yCount * unitsPerSquare;
+      drawText(_format(val), Offset(originX, y), isX: false);
+      yCount++;
+    }
+    yCount = -1;
+    for (double y = originY + 40; y <= h; y += 40) {
+      final val = yCount * unitsPerSquare;
+      drawText(_format(val), Offset(originX, y), isX: false);
+      yCount--;
+    }
+  }
+
+  String _format(double v) {
+    if (v == v.toInt()) return v.toInt().toString();
+    return v.toStringAsFixed(1);
   }
 
   @override
@@ -449,7 +556,10 @@ class _BackgroundPainter extends CustomPainter {
         oldDelegate.showAxis != showAxis ||
         oldDelegate.gridColor != gridColor ||
         oldDelegate.gridStrokeWidth != gridStrokeWidth ||
-        oldDelegate.alignment != alignment;
+        oldDelegate.alignment != alignment ||
+        oldDelegate.showNumbers != showNumbers ||
+        oldDelegate.unitsPerSquare != unitsPerSquare ||
+        oldDelegate.labelColor != labelColor;
   }
 }
 
