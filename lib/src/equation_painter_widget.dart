@@ -71,6 +71,12 @@ class EquationPainterWidget extends StatefulWidget {
   /// The color of the coordinate numbers.
   final Color labelColor;
 
+  /// The color of the X-axis (horizontal line).
+  final Color xAxisColor;
+
+  /// The color of the Y-axis (vertical line).
+  final Color yAxisColor;
+
   /// The style of animation used to reveal the graph.
   final AnimationType animationType;
 
@@ -94,6 +100,8 @@ class EquationPainterWidget extends StatefulWidget {
     this.showNumbers = true,
     this.unitsPerSquare = 1.0,
     this.labelColor = Colors.black54,
+    this.xAxisColor = Colors.black54,
+    this.yAxisColor = Colors.black54,
   });
 
   @override
@@ -117,7 +125,6 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     } else {
       _controller.value = 1.0;
     }
-    _calculateAllSegments();
   }
 
   @override
@@ -147,7 +154,10 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     }
 
     if (segmentsChanged) {
-      _calculateAllSegments();
+      _calculateAllSegments(
+        _lastSize?.width ?? widget.width,
+        _lastSize?.height ?? widget.height,
+      );
       if (widget.animate) {
         _controller.reset();
         _controller.forward();
@@ -155,16 +165,21 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     } else if (oldWidget.animationDuration != widget.animationDuration ||
         oldWidget.unitsPerSquare != widget.unitsPerSquare) {
       if (oldWidget.unitsPerSquare != widget.unitsPerSquare) {
-        _calculateAllSegments();
+        _calculateAllSegments(
+          _lastSize?.width ?? widget.width,
+          _lastSize?.height ?? widget.height,
+        );
       }
       _controller.duration = widget.animationDuration;
     }
   }
 
-  void _calculateAllSegments() {
+  Size? _lastSize;
+
+  void _calculateAllSegments(double width, double height) {
     final all = <Float32List>[];
     for (final eq in widget.equations) {
-      final segments = _calculateSegmentsFor(eq);
+      final segments = _calculateSegmentsFor(eq, width, height);
       final points = Float32List(segments.length * 4);
       for (int i = 0; i < segments.length; i++) {
         points[i * 4 + 0] = segments[i].p1.dx.toFloat();
@@ -177,9 +192,11 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     _allPoints = all;
   }
 
-  List<_LineSegment> _calculateSegmentsFor(EquationConfig config) {
-    final w = widget.width;
-    final h = widget.height;
+  List<_LineSegment> _calculateSegmentsFor(
+    EquationConfig config,
+    double w,
+    double h,
+  ) {
     const steps = 4.0;
 
     final originX = (1 + widget.alignment.x) * w / 2;
@@ -366,43 +383,72 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: widget.width,
-      height: widget.height,
-      child: Stack(
-        children: [
-          if (widget.showGrid || widget.showAxis)
-            RepaintBoundary(
-              child: CustomPaint(
-                size: Size(widget.width, widget.height),
-                painter: _BackgroundPainter(
-                  showGrid: widget.showGrid,
-                  showAxis: widget.showAxis,
-                  gridColor: widget.gridColor,
-                  gridStrokeWidth: widget.gridStrokeWidth,
-                  alignment: widget.alignment,
-                  showNumbers: widget.showNumbers,
-                  unitsPerSquare: widget.unitsPerSquare,
-                  labelColor: widget.labelColor,
-                ),
-              ),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final actualWidth =
+            widget.width > 0 && widget.width < constraints.maxWidth
+            ? widget.width
+            : constraints.maxWidth;
+        final actualHeight =
+            widget.height > 0 && widget.height < constraints.maxHeight
+            ? widget.height
+            : constraints.maxHeight;
 
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              return CustomPaint(
-                size: Size(widget.width, widget.height),
-                painter: _GraphPainter(
-                  allPoints: _allPoints ?? [],
-                  equations: widget.equations,
-                  animationProgress: _controller.value,
+        final currentSize = Size(actualWidth, actualHeight);
+
+        // Proactively recalculate if parent constraints changed the size
+        if (_lastSize != currentSize) {
+          _lastSize = currentSize;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() {
+                _calculateAllSegments(actualWidth, actualHeight);
+              });
+            }
+          });
+        }
+
+        return SizedBox(
+          width: actualWidth,
+          height: actualHeight,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (widget.showGrid || widget.showAxis)
+                RepaintBoundary(
+                  child: CustomPaint(
+                    size: currentSize,
+                    painter: _BackgroundPainter(
+                      showGrid: widget.showGrid,
+                      showAxis: widget.showAxis,
+                      gridColor: widget.gridColor,
+                      gridStrokeWidth: widget.gridStrokeWidth,
+                      alignment: widget.alignment,
+                      showNumbers: widget.showNumbers,
+                      unitsPerSquare: widget.unitsPerSquare,
+                      labelColor: widget.labelColor,
+                      xAxisColor: widget.xAxisColor,
+                      yAxisColor: widget.yAxisColor,
+                    ),
+                  ),
                 ),
-              );
-            },
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) {
+                  return CustomPaint(
+                    size: currentSize,
+                    painter: _GraphPainter(
+                      allPoints: _allPoints ?? [],
+                      equations: widget.equations,
+                      animationProgress: _controller.value,
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -423,6 +469,8 @@ class _BackgroundPainter extends CustomPainter {
   final bool showNumbers;
   final double unitsPerSquare;
   final Color labelColor;
+  final Color xAxisColor;
+  final Color yAxisColor;
 
   _BackgroundPainter({
     required this.showGrid,
@@ -433,6 +481,8 @@ class _BackgroundPainter extends CustomPainter {
     required this.showNumbers,
     required this.unitsPerSquare,
     required this.labelColor,
+    required this.xAxisColor,
+    required this.yAxisColor,
   });
 
   @override
@@ -464,13 +514,14 @@ class _BackgroundPainter extends CustomPainter {
     }
 
     if (showAxis) {
-      paint.color = Colors.black.withValues(alpha: 0.5);
       paint.strokeWidth = 2.0;
 
       if (originY >= 0 && originY <= h) {
+        paint.color = xAxisColor;
         canvas.drawLine(Offset(0, originY), Offset(w, originY), paint);
       }
       if (originX >= 0 && originX <= w) {
+        paint.color = yAxisColor;
         canvas.drawLine(Offset(originX, 0), Offset(originX, h), paint);
       }
 
@@ -559,7 +610,9 @@ class _BackgroundPainter extends CustomPainter {
         oldDelegate.alignment != alignment ||
         oldDelegate.showNumbers != showNumbers ||
         oldDelegate.unitsPerSquare != unitsPerSquare ||
-        oldDelegate.labelColor != labelColor;
+        oldDelegate.labelColor != labelColor ||
+        oldDelegate.xAxisColor != xAxisColor ||
+        oldDelegate.yAxisColor != yAxisColor;
   }
 }
 

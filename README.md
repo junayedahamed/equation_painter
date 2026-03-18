@@ -75,6 +75,8 @@ EquationPainterWidget(
 | `showNumbers` | `bool` | `true` | Show/hide coordinate values. |
 | `unitsPerSquare`| `double` | `1.0` | Value of one grid square in math units. |
 | `labelColor` | `Color` | `black54` | Color of the coordinate numbers. |
+| `xAxisColor` | `Color` | `black54` | Color of the horizontal axis line. |
+| `yAxisColor` | `Color` | `black54` | Color of the vertical axis line. |
 
 #### `EquationConfig`
 | Property | Type | Description |
@@ -158,6 +160,8 @@ EquationPainterWidget(
 | `showNumbers` | `bool` | `true` | স্থানাঙ্ক সংখ্যা দেখানো বা লুকানো। |
 | `unitsPerSquare`| `double` | `1.0` | এক একটি গ্রিড স্কোয়ারের গাণিতিক মান। |
 | `labelColor` | `Color` | `black54` | স্থানাঙ্ক সংখ্যার রং। |
+| `xAxisColor` | `Color` | `black54` | আনুভূমিক অক্ষের (X-axis) রং। |
+| `yAxisColor` | `Color` | `black54` | উলম্ব অক্ষের (Y-axis) রং। |
 
 #### `EquationConfig`
 | প্রপার্টি | টাইপ | বর্ণনা |

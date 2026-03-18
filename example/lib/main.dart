@@ -189,6 +189,8 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
                     alignment: _alignment,
                     gridColor: Colors.white12,
                     labelColor: Colors.yellowAccent,
+                    xAxisColor: Colors.white38,
+                    yAxisColor: Colors.white38,
                     unitsPerSquare: 100.0,
                     animationDuration: const Duration(seconds: 2),
                   ),
