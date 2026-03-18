@@ -24,6 +24,15 @@ A powerful and performant Flutter package for visualizing multiple mathematical 
 - ✅ **Origin Alignment**: Position the origin (0,0) anywhere (e.g., Center, BottomLeft for 1st Quadrant).
 - ✅ **High Performance**: Optimized using `Float32List` and `drawRawPoints` for smooth frame rates.
 
+### 📸 Screenshots
+
+| | |
+|---|---|
+| ![Screenshot 1](assets/screenshots/Screenshot%20from%202026-03-19%2001-31-47.png) | ![Screenshot 2](assets/screenshots/Screenshot%20from%202026-03-19%2002-10-56.png) |
+| ![Screenshot 3](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-10.png) | ![Screenshot 4](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-19.png) |
+| ![Screenshot 5](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png) | ![Screenshot 6](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-39.png) |
+
+
 ### 🚀 Getting Started
 
 Add the package to your `pubspec.yaml`:
@@ -108,6 +117,15 @@ EquationPainterWidget(
 - ✅ **কাস্টমাইজযোগ্য কোঅর্ডিনেট সিস্টেম**: গ্রিড/অক্ষ (Axes) অন-অফ করা, রং পরিবর্তন এবং স্ট্রোক উইডথ অ্যাডজাস্ট করা যায়।
 - ✅ **অরিজিন অ্যালাইনমেন্ট**: অরিজিন (০,০) যেকোনো স্থানে স্থাপন করা যায় (যেমন: ১ম কোয়াড্র্যান্টের জন্য BottomLeft)।
 - ✅ **উচ্চ পারফরম্যান্স**: মসৃণ ফ্রেম রেটের জন্য `Float32List` এবং `drawRawPoints` ব্যবহার করে অপ্টিমাইজ করা হয়েছে।
+
+### 📸 স্ক্রিনশটসমূহ
+
+| | |
+|---|---|
+| ![স্ক্রিনশট ১](assets/screenshots/Screenshot%20from%202026-03-19%2001-31-47.png) | ![স্ক্রিনশট ২](assets/screenshots/Screenshot%20from%202026-03-19%2002-10-56.png) |
+| ![স্ক্রিনশট ৩](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-10.png) | ![স্ক্রিনশট ৪](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-19.png) |
+| ![স্ক্রিনশট ৫](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png) | ![স্ক্রিনশট ৬](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-39.png) |
+
 
 ### 🚀 শুরু করা যাক
 

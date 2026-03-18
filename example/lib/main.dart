@@ -24,6 +24,24 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class EquationExample {
+  final String name;
+  final String formula;
+  final MathFunction function;
+  final Color color;
+  final AnimationType animationType;
+  final double unitsPerSquare;
+
+  EquationExample({
+    required this.name,
+    required this.formula,
+    required this.function,
+    required this.color,
+    this.animationType = AnimationType.radial,
+    this.unitsPerSquare = 50.0,
+  });
+}
+
 class EquationDemoPage extends StatefulWidget {
   const EquationDemoPage({super.key});
 
@@ -33,17 +51,83 @@ class EquationDemoPage extends StatefulWidget {
 
 class _EquationDemoPageState extends State<EquationDemoPage> {
   Alignment _alignment = Alignment.center;
+  late List<EquationExample> _examples;
+  late EquationExample _selectedExample;
+
+  @override
+  void initState() {
+    super.initState();
+    _examples = [
+      EquationExample(
+        name: 'Classical Sine Wave',
+        formula: 'y - 60 * sin(x / 30) = 0',
+        function: (x, y) => y - 60 * sin(x / 30),
+        color: Colors.cyanAccent,
+        animationType: AnimationType.linearX,
+        unitsPerSquare: 60,
+      ),
+      EquationExample(
+        name: 'Perfect Circle',
+        formula: 'x² + y² - 100² = 0',
+        function: (x, y) => x * x + y * y - 100 * 100,
+        color: Colors.amberAccent,
+        animationType: AnimationType.radial,
+        unitsPerSquare: 50,
+      ),
+      EquationExample(
+        name: 'Mathematical Heart',
+        formula: '(x²+y²-1)³ - x²y³ = 0',
+        function: (x, y) {
+          final nx = x / 80;
+          final ny = y / 80;
+          return pow(nx * nx + ny * ny - 1, 3) - (nx * nx * ny * ny * ny);
+        },
+        color: Colors.redAccent,
+        animationType: AnimationType.sequential,
+        unitsPerSquare: 40,
+      ),
+      EquationExample(
+        name: 'Folium of Descartes',
+        formula: 'x³ + y³ - 3axy = 0',
+        function: (x, y) {
+          const a = 100.0;
+          return x * x * x + y * y * y - 3 * a * x * y;
+        },
+        color: Colors.lightGreenAccent,
+        animationType: AnimationType.sequential,
+        unitsPerSquare: 80,
+      ),
+      EquationExample(
+        name: 'Complex Interference',
+        formula: 'tan(20x) - tan(15y) + sin(xy) + cos(y/x) + ...',
+        function: (x, y) =>
+            tan(20 * x) -
+            tan(15 * y) +
+            sin(x * y) +
+            cos(y / x) +
+            log(1 + x * x + y * y) +
+            (x * x * x - y * y * y) / (x * x + y * y) -
+            10,
+        color: Colors.pinkAccent,
+        animationType: AnimationType.linearX,
+        unitsPerSquare: 50,
+      ),
+    ];
+    _selectedExample = _examples[0];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Equation Visualization'),
+        title: const Text('Equation Painter'),
         elevation: 0,
+        backgroundColor: Colors.transparent,
         centerTitle: true,
         actions: [
           PopupMenuButton<Alignment>(
-            icon: const Icon(Icons.grid_view),
+            tooltip: 'Change Origin Alignment',
+            icon: const Icon(Icons.grid_view_rounded),
             onSelected: (val) => setState(() => _alignment = val),
             itemBuilder: (context) => [
               const PopupMenuItem(
@@ -70,6 +154,7 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
           ),
         ],
       ),
+      extendBodyBehindAppBar: true,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -78,115 +163,122 @@ class _EquationDemoPageState extends State<EquationDemoPage> {
             colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
           ),
         ),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Text(
-                    '''tan(20 * x) - tan(15 * y) + sin(x * y) + cos(y / x) + log(1 + x^2 + y^2) + (x^3 - y^3) / (x^2 + y^2) - 10''',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white70,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Selection Dropdown
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(25),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<EquationExample>(
+                      value: _selectedExample,
+                      isExpanded: true,
+                      dropdownColor: const Color(0xFF203A43),
+                      borderRadius: BorderRadius.circular(16),
+                      items: _examples
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(
+                                e.name,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _selectedExample = val);
+                        }
+                      },
                     ),
                   ),
                 ),
-                Container(
-                  margin: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
+              ),
+
+              // Formula Display
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  _selectedExample.formula,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: _selectedExample.color.withAlpha(204),
+                    shadows: [
+                      Shadow(
                         color: Colors.black.withAlpha(127),
-                        blurRadius: 30,
-                        offset: const Offset(0, 15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: EquationPainterWidget(
-                      width: MediaQuery.of(context).size.width * 0.8,
-                      height: MediaQuery.of(context).size.width * 0.8,
-                      alignment: _alignment,
-                      showNumbers: true,
-                      unitsPerSquare: 50.0,
-                      animationDuration: const Duration(milliseconds: 2500),
-                      equations: [
-                        // A complex interference pattern
-                        // EquationConfig(
-                        //   function: (x, y) => cos(x * y) - sin(x * x - y * y),
-                        //   color: Colors.greenAccent.withAlpha(153),
-                        //   strokeWidth: 1.5,
-                        //   animationType: AnimationType.linearX,
-                        // ),
-                        // A mirrored interference pattern
-                        // EquationConfig(
-                        //   function: (x, y) =>
-                        //       tan(x / 20) -
-                        //       tan(y / 20) +
-                        //       tan(x / y) +
-                        //       sin(y) * tan(y / x),
-                        //   color: Colors.blueAccent.withAlpha(153),
-                        //   strokeWidth: 1.5,
-                        //   animationType: AnimationType.linearX,
-                        // ),
-                        // A prominent sine wave
-                        // EquationConfig(
-                        //   function: (x, y) => y - 60 * sin(x / 60),
-                        //   color: Colors.pinkAccent,
-                        //   strokeWidth: 3.5,
-                        //   animationType: AnimationType.sequential,
-                        // ),
-                        // // A circle
-                        // EquationConfig(
-                        //   maxX: 500,
-                        //   maxY: 300,
-                        //   minX: -500,
-                        //   minY: -300,
-                        //   function: (x, y) =>
-                        //       sin(x * x + y * y) + cos(3 * x) * sin(3 * y),
-                        //   color: Colors.yellowAccent,
-                        //   strokeWidth: 2.0,
-                        //   animationType: AnimationType.radial,
-                        // ),
-                        // a arrow dynamic things
-                        EquationConfig(
-                          function: (x, y) =>
-                              tan(20 * x) -
-                              tan(15 * y) +
-                              sin(x * y) +
-                              cos(y / x) +
-                              log(1 + x * x + y * y) +
-                              (x * x * x - y * y * y) / (x * x + y * y) -
-                              10,
-                          color: Colors.red,
-                          strokeWidth: 2.0,
-                          animationType: AnimationType.linearX,
+                ),
+              ),
+
+              // The Visualization Widget
+              Expanded(
+                child: Center(
+                  child: Container(
+                    margin: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(76),
+                          blurRadius: 40,
+                          spreadRadius: 5,
                         ),
                       ],
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 20,
-                  ),
-                  child: Text(
-                    "Try changing the origin alignment using the top-right menu!",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withAlpha(138),
-                      fontStyle: FontStyle.italic,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(28),
+                      child: EquationPainterWidget(
+                        key: ValueKey('${_selectedExample.name}_${_alignment}'),
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.width,
+                        alignment: _alignment,
+                        showNumbers: true,
+                        labelColor: Colors.white,
+                        unitsPerSquare: _selectedExample.unitsPerSquare,
+                        animationDuration: const Duration(milliseconds: 2000),
+                        equations: [
+                          EquationConfig(
+                            function: _selectedExample.function,
+                            color: _selectedExample.color,
+                            strokeWidth: 3.0,
+                            animationType: _selectedExample.animationType,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+
+              const Padding(
+                padding: EdgeInsets.only(bottom: 24, left: 40, right: 40),
+                child: Text(
+                  "Interactive implicit equation rendering in real-time.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
