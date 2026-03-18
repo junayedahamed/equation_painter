@@ -23,7 +23,8 @@ A powerful and performant Flutter package for visualizing multiple mathematical 
 - ✅ **Configurable Units**: Define how many units each grid square represents (e.g., 1 square = 5 units).
 - ✅ **Dynamic Animations**: Choose from `radial`, `sequential`, `linearX`, or `linearY` animation styles.
 - ✅ **Customizable Coordinate System**: Toggle grids/axes, change colors, and adjust stroke widths.
-- ✅ **Origin Alignment**: Position the origin (0,0) anywhere (e.g., Center, BottomLeft for 1st Quadrant).
+- ✅ **Origin Alignment**: Position the origin (0,0) anywhere (Center, BottomLeft, etc.).
+- ✅ **Equation Parser**: Build-in parser to convert string-based formulas (e.g., `y - x^2`) into executable functions in real-time.
 - ✅ **High Performance**: Optimized using `Float32List` and `drawRawPoints` for smooth frame rates.
 
 ### 📸 Screenshots
@@ -34,6 +35,7 @@ A powerful and performant Flutter package for visualizing multiple mathematical 
 ![Screenshot 4](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-19.png)
 ![Screenshot 5](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png)
 ![Screenshot 6](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-39.png)
+![Screenshot 7](assets/screenshots/Screenshot%20from%202026-03-19%2003-17-19.png)
 
 ### 🚀 Getting Started
 
@@ -62,13 +64,21 @@ EquationPainterWidget(
       strokeWidth: 3,
       animationType: AnimationType.radial,
     ),
-    EquationConfig(
-      function: (x, y) => y - 50 * sin(x / 20), // y = 50 * sin(x/20)
-      color: Colors.pinkAccent,
-      strokeWidth: 2,
-      animationType: AnimationType.linearX,
-    ),
   ],
+)
+```
+
+### 🧮 Equation Parsing
+
+You can now parse string-based equations directly using `EquationParser`.
+
+```dart
+final userEquation = "tan(20*x) - tan(15*y) + sin(x*y) - 10";
+final mathFunction = EquationParser.parse(userEquation);
+
+EquationConfig(
+  function: mathFunction,
+  color: Colors.pinkAccent,
 )
 ```
 
@@ -117,7 +127,8 @@ EquationPainterWidget(
 - ✅ **কনফিগারেবল ইউনিট**: প্রতিটি গ্রিড স্কোয়ার কত ইউনিট উপস্থাপন করে তা নির্ধারণ করুন (যেমন: ১ স্কোয়ার = ৫ ইউনিট)।
 - ✅ **ডায়নামিক অ্যানিমেশন**: `radial`, `sequential`, `linearX`, অথবা `linearY` অ্যানিমেশন স্টাইল থেকে বেছে নিন।
 - ✅ **কাস্টমাইজযোগ্য কোঅর্ডিনেট সিস্টেম**: গ্রিড/অক্ষ (Axes) অন-অফ করা, রং পরিবর্তন এবং স্ট্রোক উইডথ অ্যাডজাস্ট করা যায়।
-- ✅ **অরিজিন অ্যালাইনমেন্ট**: অরিজিন (০,০) যেকোনো স্থানে স্থাপন করা যায় (যেমন: ১ম কোয়াড্র্যান্টের জন্য BottomLeft)।
+- ✅ **অরিজিন অ্যালাইনমেন্ট**: অরিজিন (০,০) যেকোনো স্থানে স্থাপন করা যায়।
+- ✅ **ইকুয়েশন পার্সার**: টেক্সট ফরম্যাটে থাকা যে কোনো সমীকরণ (যেমন: `y - x^2`) সরাসরি পার্স করে রিয়েল-টাইমে প্রদর্শন করার সুবিধা।
 - ✅ **উচ্চ পারফরম্যান্স**: মসৃণ ফ্রেম রেটের জন্য `Float32List` এবং `drawRawPoints` ব্যবহার করে অপ্টিমাইজ করা হয়েছে।
 
 ### 📸 স্ক্রিনশটসমূহ
@@ -128,6 +139,7 @@ EquationPainterWidget(
 ![স্ক্রিনশট ৪](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-19.png)
 ![স্ক্রিনশট ৫](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png)
 ![স্ক্রিনশট ৬](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-39.png)
+![স্ক্রিনশট ৭](assets/screenshots/Screenshot%20from%202026-03-19%2003-17-19.png)
 
 ### 🚀 শুরু করা যাক
 
@@ -156,13 +168,21 @@ EquationPainterWidget(
       strokeWidth: 3,
       animationType: AnimationType.radial,
     ),
-    EquationConfig(
-      function: (x, y) => y - 50 * sin(x / 20), // y = 50 * sin(x/20)
-      color: Colors.pinkAccent,
-      strokeWidth: 2,
-      animationType: AnimationType.linearX,
-    ),
   ],
+)
+```
+
+### 🧮 ইকুয়েশন পার্সিং (Equation Parsing)
+
+আপনি এখন `EquationParser` ব্যবহার করে সরাসরি সমীকরণ পার্স করতে পারেন।
+
+```dart
+final userEquation = "tan(20*x) - tan(15*y) + sin(x*y) - 10";
+final mathFunction = EquationParser.parse(userEquation);
+
+EquationConfig(
+  function: mathFunction,
+  color: Colors.pinkAccent,
 )
 ```
 

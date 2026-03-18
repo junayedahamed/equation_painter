@@ -36,16 +36,15 @@ class EquationVisualizerPage extends StatefulWidget {
 
 class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
   final TextEditingController _equationController = TextEditingController(
-    text: 'y - x^2',
+    // text:
+    //     'tan(20 * x) - tan(15 * y) + sin(x * y) + cos(y / x) + log(1 + x * x + y * y) + (x * x * x - y * y * y) / (x * x + y * y) - 10',
   );
 
-  // Current active equation config
   EquationConfig? _activeConfig;
 
   @override
   void initState() {
     super.initState();
-    // Initialize with the default equation
     _updateGraph();
   }
 
@@ -83,7 +82,7 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header & Logo
+              // Header
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Row(
@@ -108,11 +107,10 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
                           ),
                         ),
                         Text(
-                          'Real-time Visualizer',
+                          'Visualizer',
                           style: TextStyle(fontSize: 14, color: Colors.white54),
                         ),
                       ],
@@ -145,23 +143,20 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: _equationController,
+                        maxLines: 3,
+                        minLines: 1,
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           color: Colors.white,
-                          fontWeight: FontWeight.normal,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'e.g. y - x^2',
+                          hintText: 'Enter equation...',
                           hintStyle: const TextStyle(color: Colors.white24),
                           filled: true,
                           fillColor: Colors.black.withAlpha(50),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.functions,
-                            color: Color(0xFF818CF8),
                           ),
                         ),
                       ),
@@ -175,22 +170,13 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          elevation: 8,
-                          shadowColor: const Color(0xFF6366F1).withAlpha(100),
                         ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Show Graph',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.play_arrow_rounded),
-                          ],
+                        child: const Text(
+                          'Show Graph',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -200,7 +186,7 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
 
               const SizedBox(height: 24),
 
-              // Graph Visualizer
+              // Graph
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -225,25 +211,21 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                                   'Enter an equation and click "Show"',
                                 ),
                               )
-                            : RepaintBoundary(
-                                child: EquationPainterWidget(
-                                  key: ValueKey(
-                                    _activeConfig!.function.hashCode ^
-                                        _equationController.text.hashCode,
-                                  ),
-                                  unitsPerSquare: 5.0,
-                                  alignment: Alignment.center,
-                                  showNumbers: true,
-                                  labelColor: Colors.white54,
-                                  xAxisColor: Colors.white12,
-                                  yAxisColor: Colors.white12,
-                                  gridColor: Colors.white.withAlpha(10),
-                                  equations: [_activeConfig!],
-                                  animationDuration: const Duration(
-                                    milliseconds: 1500,
-                                  ),
-                                  animate: true,
+                            : EquationPainterWidget(
+                                width: MediaQuery.of(context).size.width,
+                                height: MediaQuery.of(context).size.height,
+                                unitsPerSquare: 50.0,
+                                alignment: Alignment.center,
+                                showNumbers: true,
+                                labelColor: const Color.fromARGB(137, 7, 6, 6),
+                                xAxisColor: Colors.white12,
+                                yAxisColor: Colors.white12,
+                                gridColor: Colors.white.withAlpha(10),
+                                equations: [_activeConfig!],
+                                animationDuration: const Duration(
+                                  milliseconds: 1500,
                                 ),
+                                animate: true,
                               ),
                       ),
                     ),
