@@ -1,4 +1,4 @@
-# 📈 eq_visulaization
+# 📈 eq_visualization
  By Junayed Ahamed
 
 A powerful and performant Flutter package for visualizing multiple mathematical equations simultaneously with beautiful animations and customizable coordinate systems.
@@ -113,6 +113,26 @@ EquationConfig(
 - `linearX`: Revealed left to right.
 - `linearY`: Revealed top to bottom.
 
+### 🧪 Testing
+
+We have included both unit and E2E (integration) tests to ensure the core logic and visual representation work correctly.
+
+#### **Unit Tests**
+Run unit tests for the equation parser and widget logic:
+```bash
+flutter test
+```
+
+#### **E2E / Integration Tests**
+Run E2E tests using the `integration_test` package:
+```bash
+cd example
+flutter test integration_test/app_test.dart
+```
+
+This verifies the end-to-end flow: opening the app, entering an equation, and visualizing it.
+
+
 </details>
 
 
@@ -216,6 +236,26 @@ EquationConfig(
 - `sequential`: হাতের ড্রয়িং এফেক্ট (কার্ভ বরাবর এগিয়ে যায়)।
 - `linearX`: বাম থেকে ডানে প্রকাশ পায়।
 - `linearY`: উপর থেকে নিচে প্রকাশ পায়।
+
+### 🧪 টেস্টিং (Testing)
+
+কোর লজিক এবং ভিজ্যুয়াল রিপ্রেজেন্টেশন সঠিকভাবে কাজ করছে কি না তা নিশ্চিত করার জন্য আমরা ইউনিট এবং ই-টু-ই (E2E) ইন্টিগ্রেশন টেস্ট অন্তর্ভুক্ত করেছি।
+
+#### **ইউনিট টেস্ট**
+ইকুয়েশন পার্সার এবং উইজেট লজিক যাচাই করার জন্য ইউনিট টেস্ট রান করুন:
+```bash
+flutter test
+```
+
+#### **E2E / ইন্টিগ্রেশন টেস্ট**
+`integration_test` প্যাকেজ ব্যবহার করে E2E টেস্ট রান করুন:
+```bash
+cd example
+flutter test integration_test/app_test.dart
+```
+
+এটি পুরো ফ্লো-টি যাচাই করে: অ্যাপ ওপেন করা, একটি সমীকরণ ইনপুট দেওয়া এবং এটি ভিজ্যুয়ালাইজ করা।
+
 
 </details>
 

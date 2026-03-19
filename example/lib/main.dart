@@ -35,37 +35,61 @@ class EquationVisualizerPage extends StatefulWidget {
 }
 
 class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
-  final TextEditingController _equationController = TextEditingController(
-    // text:
-    //     'tan(20 * x) - tan(15 * y) + sin(x * y) + cos(y / x) + log(1 + x * x + y * y) + (x * x * x - y * y * y) / (x * x + y * y) - 10',
-  );
+  final TextEditingController _equationController = TextEditingController();
 
+  // FIX BUG-14: _activeConfig starts null — graph shows "enter equation" hint initially
   EquationConfig? _activeConfig;
 
-  @override
-  void initState() {
-    super.initState();
-    _updateGraph();
-  }
-
-  void _updateGraph() {
-    setState(() {
-      final equation = _equationController.text.trim();
-      if (equation.isEmpty) return;
-
-      _activeConfig = EquationConfig(
-        function: EquationParser.parse(equation),
-        color: const Color(0xFF6366F1),
-        strokeWidth: 3.0,
-        animationType: AnimationType.radial,
-      );
-    });
-  }
+  // Track last successfully parsed equation string to avoid redundant rebuilds
+  String _lastParsedEquation = '';
 
   @override
   void dispose() {
     _equationController.dispose();
     super.dispose();
+  }
+
+  void _updateGraph() {
+    final equation = _equationController.text.trim();
+
+    // FIX BUG-14: Clear graph when the field is empty
+    if (equation.isEmpty) {
+      setState(() {
+        _activeConfig = null;
+        _lastParsedEquation = '';
+      });
+      return;
+    }
+
+    // Skip redundant re-parses for the same equation text
+    if (equation == _lastParsedEquation) return;
+
+    // FIX BUG-13: Use parseOrNull to detect parse failures and show feedback
+    final fn = EquationParser.parseOrNull(equation);
+    if (fn == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Invalid equation: "$equation"\nCheck syntax (e.g. x^2 + y^2 - 100)',
+            style: const TextStyle(fontFamily: 'monospace'),
+          ),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _lastParsedEquation = equation;
+      _activeConfig = EquationConfig(
+        function: fn,
+        color: const Color(0xFF6366F1),
+        strokeWidth: 3.0,
+        animationType: AnimationType.radial,
+      );
+    });
   }
 
   @override
@@ -133,12 +157,18 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Text(
-                        "Equation f(x, y) = 0",
+                        'Equation  f(x, y) = 0',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: Colors.white38,
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Example hint
+                      const Text(
+                        'e.g.  x^2 + y^2 - 2500  •  sin(x) - y  •  2x + y - 10',
+                        style: TextStyle(fontSize: 10, color: Colors.white24),
                       ),
                       const SizedBox(height: 8),
                       TextField(
@@ -148,9 +178,10 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                         style: const TextStyle(
                           fontSize: 16,
                           color: Colors.white,
+                          fontFamily: 'monospace',
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Enter equation...',
+                          hintText: 'Enter equation, e.g.  x^2 + y^2 - 2500',
                           hintStyle: const TextStyle(color: Colors.white24),
                           filled: true,
                           fillColor: Colors.black.withAlpha(50),
@@ -158,7 +189,20 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
+                          // Clear button
+                          suffixIcon: _equationController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, color: Colors.white38),
+                                  onPressed: () {
+                                    _equationController.clear();
+                                    _updateGraph();
+                                  },
+                                )
+                              : null,
                         ),
+                        // FIX: also rebuild suffix icon on text change
+                        onChanged: (_) => setState(() {}),
+                        onSubmitted: (_) => _updateGraph(),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -206,20 +250,37 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                       child: Container(
                         color: const Color(0xFF0F172A),
                         child: _activeConfig == null
-                            ? const Center(
-                                child: Text(
-                                  'Enter an equation and click "Show"',
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.functions_rounded,
+                                      size: 48,
+                                      color: Colors.white10,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    const Text(
+                                      'Enter an equation above and tap "Show Graph"',
+                                      style: TextStyle(color: Colors.white24),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
                                 ),
                               )
+                            // FIX BUG-12: Use 0 (fills constraints) instead of MediaQuery
+                            // so the LayoutBuilder inside EquationPainterWidget correctly
+                            // receives the available space from Expanded.
                             : EquationPainterWidget(
-                                width: MediaQuery.of(context).size.width,
-                                height: MediaQuery.of(context).size.height,
+                                width: 0, // 0 → fills LayoutBuilder constraint
+                                height: 0, // 0 → fills LayoutBuilder constraint
                                 unitsPerSquare: 50.0,
                                 alignment: Alignment.center,
                                 showNumbers: true,
-                                labelColor: const Color.fromARGB(137, 7, 6, 6),
-                                xAxisColor: Colors.white12,
-                                yAxisColor: Colors.white12,
+                                // FIX BUG-11: Use a visible color on dark background
+                                labelColor: Colors.white38,
+                                xAxisColor: Colors.white24,
+                                yAxisColor: Colors.white24,
                                 gridColor: Colors.white.withAlpha(10),
                                 equations: [_activeConfig!],
                                 animationDuration: const Duration(

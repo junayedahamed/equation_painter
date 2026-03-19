@@ -53,6 +53,13 @@ EquationPainterWidget(
    ```bash
    flutter run
    ```
+
+### 🧪 E2E / Integration Tests
+
+Run the automated integration tests to verify the core visualization flow:
+```bash
+flutter test integration_test/app_test.dart
+```
 </details>
 
 <br>
@@ -73,5 +80,12 @@ EquationPainterWidget(
 ১. `example` ডিরেক্টরিতে যান: `cd example`
 ২. ডিপেন্ডেন্সি নিয়ে আসুন: `flutter pub get`
 ৩. অ্যাপটি রান করুন: `flutter run`
+
+### 🧪 E2E / ইন্টিগ্রেশন টেস্ট
+
+স্বয়ংক্রিয় ইন্টিগ্রেশন টেস্ট রান করার জন্য নিচের কমান্ডটি ব্যবহার করুন:
+```bash
+flutter test integration_test/app_test.dart
+```
 </details>
 
