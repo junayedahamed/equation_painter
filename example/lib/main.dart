@@ -374,7 +374,7 @@ class EquationVisualizerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: EquationPainterWidget(
+        child: EquationPainter(
           // unitsPerSquare: 100,
           interactive: false,
           showAxisLabel: true,

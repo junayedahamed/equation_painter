@@ -7,10 +7,10 @@ import 'background_painter.dart';
 import 'graph_painter.dart';
 import 'line_segment.dart';
 
-/// [EquationPainterWidget] is the primary widget responsible for rendering and animating
+/// [EquationPainter] is the primary widget responsible for rendering and animating
 /// one or more mathematical equations on a coordinate system grid.
 /// It supports interactive panning and zooming.
-class EquationPainterWidget extends StatefulWidget {
+class EquationPainter extends StatefulWidget {
   /// A list of [EquationConfig] objects representing the equations to be drawn.
   final List<EquationConfig> equations;
 
@@ -65,7 +65,7 @@ class EquationPainterWidget extends StatefulWidget {
   /// Whether to show a hint when no equations are visible.
   final bool showHint;
 
-  const EquationPainterWidget({
+  const EquationPainter({
     super.key,
     required this.equations,
     this.width = double.infinity,
@@ -88,10 +88,10 @@ class EquationPainterWidget extends StatefulWidget {
   });
 
   @override
-  State<EquationPainterWidget> createState() => _EquationPainterWidgetState();
+  State<EquationPainter> createState() => _EquationPainterState();
 }
 
-class _EquationPainterWidgetState extends State<EquationPainterWidget>
+class _EquationPainterState extends State<EquationPainter>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   List<Float32List>? _allPoints;
@@ -130,7 +130,7 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
   }
 
   @override
-  void didUpdateWidget(EquationPainterWidget oldWidget) {
+  void didUpdateWidget(EquationPainter oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.animationDuration != widget.animationDuration) {
