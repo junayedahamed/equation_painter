@@ -1,3 +1,9 @@
+## 0.0.2+2
+
+* Added `showHint` parameter to `EquationPainterWidget` for optional troubleshooting guidance.
+* Fixed overflow issues when displaying hints by utilizing `Stack` and `Positioned` layouts.
+* Improved default `unitsPerSquare` and interactivity settings for better out-of-the-box experience.
+
 ## 0.0.2+1
 
 * Abstracted equation drawing logic into `EquationPainterWidget` for easier reuse.

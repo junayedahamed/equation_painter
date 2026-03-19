@@ -1,6 +1,6 @@
 name: eq_visulaization
 description: High-performance Flutter widget for visualizing multiple mathematical equations simultaneously with beautiful reveal animations and a customizable coordinate system.
-version: 0.0.2+1
+version: 0.0.2+2
 homepage: https://github.com/junayedahamed/eq_visualization
 repository: https://github.com/junayedahamed/eq_visualization
 issue_tracker: https://github.com/junayedahamed/eq_visualization/issues
