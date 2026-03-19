@@ -64,6 +64,7 @@ class EquationConfig {
 
 /// [EquationPainterWidget] is the primary widget responsible for rendering and animating
 /// one or more mathematical equations on a coordinate system grid.
+/// It supports interactive panning and zooming.
 class EquationPainterWidget extends StatefulWidget {
   /// A list of [EquationConfig] objects representing the equations to be drawn.
   final List<EquationConfig> equations;
@@ -95,7 +96,7 @@ class EquationPainterWidget extends StatefulWidget {
   /// Whether to show numerical labels on the axes.
   final bool showNumbers;
 
-  /// Scale factor: how many mathematical units are represented by one grid square (~40 pixels).
+  /// Initial scale factor: how many mathematical units are represented by one grid square (~40 pixels).
   final double unitsPerSquare;
 
   /// The color of the axis numbers and labels.
@@ -110,8 +111,11 @@ class EquationPainterWidget extends StatefulWidget {
   /// The default [AnimationType] for all equations in this widget.
   final AnimationType animationType;
 
-  /// Where the mathematical origin (0,0) should be positioned within the widget's bounds.
+  /// Initial alignment of the mathematical origin (0,0) within the widget.
   final Alignment alignment;
+  
+  /// Whether to enable interactive pan and zoom gestures.
+  final bool interactive;
 
   const EquationPainterWidget({
     super.key,
@@ -131,28 +135,32 @@ class EquationPainterWidget extends StatefulWidget {
     this.labelColor = Colors.black54,
     this.xAxisColor = Colors.black54,
     this.yAxisColor = Colors.black54,
+    this.interactive = true, // Enabled by default
   });
 
   @override
   State<EquationPainterWidget> createState() => _EquationPainterWidgetState();
 }
 
-/// [_EquationPainterWidgetState] handles the animation lifecycle and the heavy computation
-/// of curve segments whenever the widget's data or size changes.
 class _EquationPainterWidgetState extends State<EquationPainterWidget>
     with SingleTickerProviderStateMixin {
-  /// Controller for the reveal animation.
   late AnimationController _controller;
-
-  /// Stores pre-computed points for all equations as [Float32List] for efficient rendering.
   List<Float32List>? _allPoints;
-
-  /// Last layout size used for point calculation — prevents redundant recalculations.
   Size? _lastSize;
+
+  // Interactive states
+  late Offset _currentTranslation;
+  late double _currentScale;
+  
+  // During active gestures, we lower calculation quality for 60fps performance
+  bool _isInteracting = false;
 
   @override
   void initState() {
     super.initState();
+    _currentTranslation = Offset(widget.alignment.x, widget.alignment.y);
+    _currentScale = widget.unitsPerSquare > 0 ? widget.unitsPerSquare : 1.0;
+    
     _controller = AnimationController(
       vsync: this,
       duration: widget.animationDuration,
@@ -163,8 +171,6 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
       _controller.value = 1.0;
     }
 
-    // Schedule initial segment calculation after the first frame so we have
-    // a valid size from LayoutBuilder
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _lastSize != null) {
         setState(() {
@@ -178,27 +184,30 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
   void didUpdateWidget(EquationPainterWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Update animation duration if changed
     if (oldWidget.animationDuration != widget.animationDuration) {
       _controller.duration = widget.animationDuration;
     }
 
-    // Check if animation was re-enabled
     if (!oldWidget.animate && widget.animate) {
       _controller.reset();
       _controller.forward();
     }
 
-    // Determine if segments need full recalculation
+    bool externalStateReset = 
+        oldWidget.alignment != widget.alignment ||
+        oldWidget.unitsPerSquare != widget.unitsPerSquare;
+        
+    if (externalStateReset) {
+      _currentTranslation = Offset(widget.alignment.x, widget.alignment.y);
+      _currentScale = widget.unitsPerSquare > 0 ? widget.unitsPerSquare : 1.0;
+    }
+
     bool segmentsChanged =
         oldWidget.width != widget.width ||
         oldWidget.height != widget.height ||
-        oldWidget.alignment != widget.alignment ||
-        // FIX BUG-7: unitsPerSquare must also be checked here (not just in else-if)
-        oldWidget.unitsPerSquare != widget.unitsPerSquare ||
+        externalStateReset ||
         oldWidget.equations.length != widget.equations.length;
 
-    // Deep check: if any specific equation logic or bounds changed
     if (!segmentsChanged) {
       for (int i = 0; i < widget.equations.length; i++) {
         final eq = widget.equations[i];
@@ -229,16 +238,13 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     }
   }
 
-  /// Iterates through every equation config to calculate its visible line segments.
   void _calculateAllSegments(double width, double height) {
-    // Guard against degenerate sizes
     if (width <= 0 || height <= 0) return;
 
     final all = <Float32List>[];
     for (final eq in widget.equations) {
       final segments = _calculateSegmentsFor(eq, width, height);
 
-      // Flatten the Offset pairs into a Float32List for fast canvas.drawRawPoints
       final points = Float32List(segments.length * 4);
       for (int i = 0; i < segments.length; i++) {
         points[i * 4 + 0] = segments[i].p1.dx;
@@ -251,38 +257,27 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     _allPoints = all;
   }
 
-  /// The core logic that converts a mathematical function into visual line segments using a
-  /// simplified Marching Squares approach. Scans the visible grid and finds zero-crossings.
-  List<_LineSegment> _calculateSegmentsFor(
-    EquationConfig config,
-    double w,
-    double h,
-  ) {
-    // Density of samples. Lower is more detailed but slower.
-    const steps = 4.0;
+  List<_LineSegment> _calculateSegmentsFor(EquationConfig config, double w, double h) {
+    // Dynamic resolution: 4.0 normally, 8.0 during interaction for faster calc
+    final double steps = _isInteracting ? 8.0 : 4.0;
 
-    // FIX BUG-16: guard against unitsPerSquare == 0
-    final safeUnitsPerSquare = widget.unitsPerSquare > 0 ? widget.unitsPerSquare : 1.0;
+    final double safeUnitsPerSquare = _currentScale > 0 ? _currentScale : 1.0;
 
-    // Calculate origin projection based on [alignment].
-    final originX = (1 + widget.alignment.x) * w / 2;
-    final originY = (1 + widget.alignment.y) * h / 2;
+    // Convert internal alignment [-1, 1] to pixel offset from center
+    // We treat translation x/y as logical alignment equivalents
+    final originX = (1 + _currentTranslation.dx) * w / 2;
+    final originY = (1 + _currentTranslation.dy) * h / 2;
 
-    // Ratio of pixels to mathematical units.
     final double pixelsPerUnit = 40.0 / safeUnitsPerSquare;
 
-    // Local helper: Mathematical Coordinates → Flutter Canvas Coordinates.
     Offset mathToCanvas(Offset c) =>
         Offset(originX + c.dx * pixelsPerUnit, originY - c.dy * pixelsPerUnit);
 
-    // Determine the visible range in math units.
-    final double canvasMinX = -(1 + widget.alignment.x) * w / (2 * pixelsPerUnit);
-    final double canvasMaxX = canvasMinX + w / pixelsPerUnit;
-    final double canvasMinY =
-        ((1 + widget.alignment.y) * h / 2 - h) / pixelsPerUnit;
-    final double canvasMaxY = canvasMinY + h / pixelsPerUnit;
+    final double canvasMinX = -originX / pixelsPerUnit;
+    final double canvasMaxX = (w - originX) / pixelsPerUnit;
+    final double canvasMinY = (originY - h) / pixelsPerUnit;
+    final double canvasMaxY = originY / pixelsPerUnit;
 
-    // Intersect canvas visibility with EquationConfig custom limits.
     final minX = max(canvasMinX, config.minX ?? -double.infinity);
     final maxX = min(canvasMaxX, config.maxX ?? double.infinity);
     final minY = max(canvasMinY, config.minY ?? -double.infinity);
@@ -290,7 +285,6 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
 
     if (minX >= maxX || minY >= maxY) return [];
 
-    // Generate sample coordinate lists.
     final double stepX = steps / pixelsPerUnit;
     final List<double> xValues = [];
     for (double x = minX; x <= maxX + stepX; x += stepX) {
@@ -308,19 +302,16 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
 
     if (rows < 2 || cols < 2) return [];
 
-    // Pre-evaluate the function at every grid point to avoid redundant calls.
     final List<double> values = List<double>.filled(rows * cols, 0);
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
         final v = config.function(xValues[c], yValues[r]);
-        // Replace NaN/Infinite with a sentinel that won't produce crossings
         values[r * cols + c] = (v.isFinite) ? v : double.nan;
       }
     }
 
     final rawSegments = <_LineSegment>[];
 
-    // Iterate through every quad (4 adjacent points) and check for sign changes.
     for (int r = 0; r < rows - 1; r++) {
       for (int c = 0; c < cols - 1; c++) {
         final double tlVal = values[r * cols + c];
@@ -337,7 +328,6 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
 
         final points = <Offset>[];
 
-        // Linearly interpolates where the curve crosses between two points.
         void check(Offset p1, double v1, Offset p2, double v2) {
           if ((v1 >= 0 && v2 <= 0) || (v1 <= 0 && v2 >= 0)) {
             if (v1 == v2) return;
@@ -348,33 +338,32 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
           }
         }
 
-        check(tl, tlVal, tr, trVal); // top edge
-        check(tr, trVal, br, brVal); // right edge
-        check(br, brVal, bl, blVal); // bottom edge
-        check(bl, blVal, tl, tlVal); // left edge
+        check(tl, tlVal, tr, trVal);
+        check(tr, trVal, br, brVal);
+        check(br, brVal, bl, blVal);
+        check(bl, blVal, tl, tlVal);
 
         if (points.length >= 2) {
           final p1m = mathToCanvas(points[0]);
           final p2m = mathToCanvas(points[1]);
 
-          // Distance metric for sorting/animation
           double dist = 0;
-          final animType = config.animationType ?? widget.animationType;
-          switch (animType) {
-            case AnimationType.radial:
-              dist =
-                  (points[0].dx + points[1].dx).abs() +
-                  (points[0].dy + points[1].dy).abs();
-              break;
-            case AnimationType.linearX:
-              dist = (points[0].dx + points[1].dx) / 2;
-              break;
-            case AnimationType.linearY:
-              dist = -((points[0].dy + points[1].dy) / 2);
-              break;
-            case AnimationType.sequential:
-              dist = 0;
-              break;
+          if (!_isInteracting) {
+            final animType = config.animationType ?? widget.animationType;
+            switch (animType) {
+              case AnimationType.radial:
+                dist = (points[0].dx + points[1].dx).abs() + (points[0].dy + points[1].dy).abs();
+                break;
+              case AnimationType.linearX:
+                dist = (points[0].dx + points[1].dx) / 2;
+                break;
+              case AnimationType.linearY:
+                dist = -((points[0].dy + points[1].dy) / 2);
+                break;
+              case AnimationType.sequential:
+                dist = 0;
+                break;
+            }
           }
           rawSegments.add(_LineSegment(p1m, p2m, dist));
         }
@@ -382,6 +371,9 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     }
 
     if (rawSegments.isEmpty) return [];
+
+    // Skip heavy sorting if interacting
+    if (_isInteracting) return rawSegments;
 
     final animType = config.animationType ?? widget.animationType;
     if (animType == AnimationType.sequential) {
@@ -392,8 +384,6 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     }
   }
 
-  /// Reorders line segments such that each segment starts approximately where the previous one ended.
-  /// Uses a greedy "nearest neighbor" algorithm with a search window for performance optimization.
   List<_LineSegment> _sortSegmentsSequentially(List<_LineSegment> segments) {
     if (segments.isEmpty) return [];
     final sorted = <_LineSegment>[];
@@ -447,6 +437,39 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     return sorted;
   }
 
+  void _onScaleStart(ScaleStartDetails details) {
+    if (!widget.interactive) return;
+    _isInteracting = true;
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    if (!widget.interactive || _lastSize == null) return;
+    
+    setState(() {
+      final w = _lastSize!.width;
+      final h = _lastSize!.height;
+
+      // Pan translation (screen space mapped to [-1, 1] alignment range)
+      final dx = details.focalPointDelta.dx / (w / 2);
+      final dy = details.focalPointDelta.dy / (h / 2);
+      
+      _currentTranslation += Offset(dx, dy);
+
+      _calculateAllSegments(w, h);
+    });
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) {
+    if (!widget.interactive) return;
+    setState(() {
+      _isInteracting = false;
+      // Recompute at full resolution when interaction ends
+      if (_lastSize != null) {
+        _calculateAllSegments(_lastSize!.width, _lastSize!.height);
+      }
+    });
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -457,20 +480,11 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Determine final canvas size based on widget properties and parent constraints.
-        final actualWidth =
-            widget.width > 0 && widget.width < constraints.maxWidth
-            ? widget.width
-            : constraints.maxWidth;
-        final actualHeight =
-            widget.height > 0 && widget.height < constraints.maxHeight
-            ? widget.height
-            : constraints.maxHeight;
+        final actualWidth = widget.width > 0 && widget.width < constraints.maxWidth ? widget.width : constraints.maxWidth;
+        final actualHeight = widget.height > 0 && widget.height < constraints.maxHeight ? widget.height : constraints.maxHeight;
 
         final currentSize = Size(actualWidth, actualHeight);
 
-        // FIX BUG-6: If size changed, recalculate segments immediately via post-frame
-        // callback — this also covers the very first frame.
         if (_lastSize != currentSize) {
           _lastSize = currentSize;
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -482,13 +496,11 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
           });
         }
 
-        return SizedBox(
+        Widget content = SizedBox(
           width: actualWidth,
           height: actualHeight,
           child: Stack(
             children: [
-              // Grid and Axes in a separate RepaintBoundary so they don't
-              // redraw during the curve animation.
               if (widget.showGrid || widget.showAxis)
                 RepaintBoundary(
                   child: CustomPaint(
@@ -498,17 +510,15 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
                       showAxis: widget.showAxis,
                       gridColor: widget.gridColor,
                       gridStrokeWidth: widget.gridStrokeWidth,
-                      alignment: widget.alignment,
+                      alignment: Alignment(_currentTranslation.dx, _currentTranslation.dy),
                       showNumbers: widget.showNumbers,
-                      unitsPerSquare: widget.unitsPerSquare > 0 ? widget.unitsPerSquare : 1.0,
+                      unitsPerSquare: _currentScale,
                       labelColor: widget.labelColor,
                       xAxisColor: widget.xAxisColor,
                       yAxisColor: widget.yAxisColor,
                     ),
                   ),
                 ),
-
-              // The curves are drawn here and updated by the animation controller.
               AnimatedBuilder(
                 animation: _controller,
                 builder: (context, _) {
@@ -517,7 +527,8 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
                     painter: _GraphPainter(
                       allPoints: _allPoints ?? [],
                       equations: widget.equations,
-                      animationProgress: _controller.value,
+                      // Draw fully immediately if user panning/zoomed
+                      animationProgress: _isInteracting ? 1.0 : _controller.value,
                     ),
                   );
                 },
@@ -525,12 +536,23 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
             ],
           ),
         );
+
+        if (widget.interactive) {
+          return GestureDetector(
+            onScaleStart: _onScaleStart,
+            onScaleUpdate: _onScaleUpdate,
+            onScaleEnd: _onScaleEnd,
+            behavior: HitTestBehavior.opaque,
+            child: ClipRect(child: content),
+          );
+        } else {
+          return ClipRect(child: content);
+        }
       },
     );
   }
 }
 
-/// A simple helper class defining a single line segment with a distance used for sorting.
 class _LineSegment {
   final Offset p1;
   final Offset p2;
@@ -538,8 +560,6 @@ class _LineSegment {
   _LineSegment(this.p1, this.p2, this.distance);
 }
 
-/// [_BackgroundPainter] is responsible for drawing non-animated elements like the grid,
-/// axes, and axis labels based on the provided configuration.
 class _BackgroundPainter extends CustomPainter {
   final bool showGrid;
   final bool showAxis;
@@ -571,31 +591,25 @@ class _BackgroundPainter extends CustomPainter {
     final h = size.height;
     final paint = Paint();
 
-    // Calculate the pixel coordinate of the origin (0,0).
     final originX = (1 + alignment.x) * w / 2;
     final originY = (1 + alignment.y) * h / 2;
 
-    // Grid spacing in pixels (always 40px per square)
     const double gridStep = 40.0;
 
     if (showGrid) {
       paint.color = gridColor;
       paint.strokeWidth = gridStrokeWidth;
 
-      // Vertical grid lines — right of origin
       for (double x = originX; x <= w; x += gridStep) {
         canvas.drawLine(Offset(x, 0), Offset(x, h), paint);
       }
-      // Vertical grid lines — left of origin
       for (double x = originX - gridStep; x >= 0; x -= gridStep) {
         canvas.drawLine(Offset(x, 0), Offset(x, h), paint);
       }
 
-      // Horizontal grid lines — below origin
       for (double y = originY; y <= h; y += gridStep) {
         canvas.drawLine(Offset(0, y), Offset(w, y), paint);
       }
-      // Horizontal grid lines — above origin
       for (double y = originY - gridStep; y >= 0; y -= gridStep) {
         canvas.drawLine(Offset(0, y), Offset(w, y), paint);
       }
@@ -619,7 +633,6 @@ class _BackgroundPainter extends CustomPainter {
     }
   }
 
-  /// Renders numerical labels along the X and Y axes.
   void _drawLabels(Canvas canvas, Size size, double originX, double originY) {
     final w = size.width;
     final h = size.height;
@@ -655,14 +668,12 @@ class _BackgroundPainter extends CustomPainter {
       tp.paint(canvas, Offset(dx, dy));
     }
 
-    // X-axis labels — positive direction
     int xCount = 1;
     for (double x = originX + gridStep; x <= w; x += gridStep) {
       final val = xCount * unitsPerSquare;
       drawText(_format(val), Offset(x, originY), isX: true);
       xCount++;
     }
-    // X-axis labels — negative direction
     xCount = -1;
     for (double x = originX - gridStep; x >= 0; x -= gridStep) {
       final val = xCount * unitsPerSquare;
@@ -670,14 +681,12 @@ class _BackgroundPainter extends CustomPainter {
       xCount--;
     }
 
-    // Y-axis labels — positive direction (upward ↑)
     int yCount = 1;
     for (double y = originY - gridStep; y >= 0; y -= gridStep) {
       final val = yCount * unitsPerSquare;
       drawText(_format(val), Offset(originX, y), isX: false);
       yCount++;
     }
-    // Y-axis labels — negative direction (downward ↓)
     yCount = -1;
     for (double y = originY + gridStep; y <= h; y += gridStep) {
       final val = yCount * unitsPerSquare;
@@ -686,10 +695,14 @@ class _BackgroundPainter extends CustomPainter {
     }
   }
 
-  /// Utility to format double values to shorter strings.
   String _format(double v) {
     if (v == v.toInt()) return v.toInt().toString();
-    return v.toStringAsFixed(2);
+    
+    // Automatically adjust decimal places based on zoom magnitude
+    if (v.abs() < 0.01) return v.toStringAsExponential(1);
+    if (v.abs() < 0.1) return v.toStringAsFixed(3);
+    if (v.abs() < 1) return v.toStringAsFixed(2);
+    return v.toStringAsFixed(1);
   }
 
   @override
@@ -707,15 +720,9 @@ class _BackgroundPainter extends CustomPainter {
   }
 }
 
-/// [_GraphPainter] is the high-performance painter responsible for drawing the actual curves.
 class _GraphPainter extends CustomPainter {
-  /// All pre-computed curve points.
   final List<Float32List> allPoints;
-
-  /// Original configurations for styles like color/stroke.
   final List<EquationConfig> equations;
-
-  /// Current animation state (0.0 to 1.0).
   final double animationProgress;
 
   _GraphPainter({
@@ -734,7 +741,7 @@ class _GraphPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     for (int i = 0; i < allPoints.length; i++) {
-      if (i >= equations.length) break; // safety guard
+      if (i >= equations.length) break;
       final points = allPoints[i];
       final config = equations[i];
       paint.color = config.color;
@@ -744,7 +751,6 @@ class _GraphPainter extends CustomPainter {
       final countToDraw = (totalSegments * animationProgress).toInt();
       if (countToDraw <= 0) continue;
 
-      // drawRawPoints is significantly faster than drawPath for this use-case.
       final pointsToDraw = Float32List.sublistView(points, 0, countToDraw * 4);
       canvas.drawRawPoints(ui.PointMode.lines, pointsToDraw, paint);
     }

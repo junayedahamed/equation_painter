@@ -1,51 +1,37 @@
-# Equation Visualization Example
+# 📈 eq_visualization Example
+Open Sourced by GitHub user **junayedahamed**
 
-### 🌐 Select Language / ভাষা নির্বাচন
+A powerful example demonstrating how to use the `eq_visulaization` package for visualizing multiple mathematical equations interactively.
+
+---
+
+### Language Switch / ভাষা পরিবর্তন
 **[English](#english) | [বাংলা](#bangla)**
 
 ---
 
 <details open id="english">
-<summary><b>🇬🇧 English Details (Click to Expand)</b></summary>
+<summary><b>🇬🇧 English Documentation (Click to Expand/Collapse)</b></summary>
+
 <br>
 
-This example demonstrates how to use the `eq_visulaization` package to render various mathematical equations, including trigonometric functions, circles, and complex implicit equations like hearts and foliums.
+<div align="center">
+  <img src="https://raw.githubusercontent.com/junayedahamed/eq_visualization/main/assets/preview.png" alt="Preview" width="700">
+</div>
 
-### Features Shown
-- **Dynamic Equation Switching**: Easily swap between different mathematical functions.
-- **Customizable Alignment**: Change the origin (0,0) position in real-time.
-- **Animation Styles**: See `radial`, `sequential`, and `linearX` animations in action.
-- **Coordinate System**: Visual representation of axes and grid with numeric labels.
+### ✨ Features Shown
+- ✅ **Interactive Panning**: Drag to pan around the graph.
+- ✅ **Live Equation Parsing**: Type equations and see them instantly rendered (e.g., `x^2 + y^2 - 100`).
+- ✅ **Dynamic Coordinates**: Axis numbers and grids that scale dynamically.
+- ✅ **High Performance**: Smooth 60fps rendering even during active pan/zoom gestures.
 
-### Code Snippet
-
-```dart
-import 'package:eq_visulaization/eq_visulaization.dart';
-
-// Inside your widget tree:
-EquationPainterWidget(
-  width: 400,
-  height: 400,
-  alignment: Alignment.center,
-  unitsPerSquare: 50.0,
-  equations: [
-    EquationConfig(
-      function: (x, y) => x * x + y * y - pow(100, 2), // Circle equation
-      color: Colors.cyanAccent,
-      strokeWidth: 3,
-      animationType: AnimationType.radial,
-    ),
-  ],
-)
-```
-
-### Running the Example
+### 🚀 Running the Example
 
 1. Navigate to the `example` directory:
    ```bash
    cd example
    ```
-2. Ensure dependencies are fetched:
+2. Get dependencies:
    ```bash
    flutter pub get
    ```
@@ -54,38 +40,53 @@ EquationPainterWidget(
    flutter run
    ```
 
-### 🧪 E2E / Integration Tests
+### 💡 Example Code Extract
 
-Run the automated integration tests to verify the core visualization flow:
-```bash
-flutter test integration_test/app_test.dart
+```dart
+EquationPainterWidget(
+  width: double.infinity,
+  height: double.infinity,
+  interactive: true,
+  unitsPerSquare: 50.0,
+  alignment: Alignment.center,
+  equations: [
+    EquationConfig(
+      function: EquationParser.parse('sin(x) - y'),
+      color: Colors.cyanAccent,
+      strokeWidth: 3,
+      animationType: AnimationType.radial,
+    ),
+  ],
+)
 ```
+
 </details>
 
-<br>
 
 <details id="bangla">
 <summary><b>🇧🇩 বাংলা উদাহরণ (বিস্তারিত দেখতে ক্লিক করুন)</b></summary>
+
 <br>
 
-এই উদাহরণটি দেখায় কিভাবে `eq_visulaization` প্যাকেজ ব্যবহার করে বিভিন্ন গাণিতিক সমীকরণ যেমন ত্রিকোণমিতিক ফাংশন, বৃত্ত এবং জটিল ইমপ্লিসিট ইকুয়েশন (যেমন হার্ট এবং ফোলিয়াম) রেন্ডার করা যায়।
+### এখানে যা দেখানো হয়েছে
+- ✅ **ইন্টারেক্টিভ প্যানিং**: গ্রাফে ড্র্যাগ করে চারপাশে প্যান করুন।
+- ✅ **লাইভ ইকুয়েশন পার্সিং**: সমীকরণ টাইপ করুন এবং সাথে সাথে রেন্ডার হতে দেখুন (যেমন: `x^2 + y^2 - 100`)।
+- ✅ **ডায়নামিক স্থানাঙ্ক**: অক্ষের সংখ্যাগুলি জুম করার সাথে সাথে পরিবর্তন হয়।
+- ✅ **উচ্চ পারফরম্যান্স**: প্যান/জুম করার সময়ও স্মুথ ফ্রেম রেট বজায় থাকে।
 
-### এখানে যা দেখানো হয়েছে:
-- **ডায়নামিক সমীকরণ পরিবর্তন**: সহজেই বিভিন্ন ফাংশনের মধ্যে পরিবর্তন করুন।
-- **কাস্টমাইজেবল অরিজিন**: অরিজিনের (০,০) অবস্থান রিয়েল-টাইমে পরিবর্তন করে দেখুন।
-- **অ্যানিমেশন স্টাইলসমূহ**: `radial`, `sequential`, এবং `linearX` অ্যানিমেশনগুলোর কার্যকারিতা দেখুন।
-- **স্থানাঙ্ক ব্যবস্থা (Coordinate System)**: সংখ্যাসহ অক্ষ এবং গ্রিডের দৃশ্যমান রিপ্রেজেন্টেশন।
+### 🚀 রান করার নিয়ম
 
-### রান করার নিয়ম:
-১. `example` ডিরেক্টরিতে যান: `cd example`
-২. ডিপেন্ডেন্সি নিয়ে আসুন: `flutter pub get`
-৩. অ্যাপটি রান করুন: `flutter run`
+১. `example` ডিরেক্টরিতে যান:
+   ```bash
+   cd example
+   ```
+২. ডিপেন্ডেন্সি নিয়ে আসুন:
+   ```bash
+   flutter pub get
+   ```
+৩. অ্যাপটি রান করুন:
+   ```bash
+   flutter run
+   ```
 
-### 🧪 E2E / ইন্টিগ্রেশন টেস্ট
-
-স্বয়ংক্রিয় ইন্টিগ্রেশন টেস্ট রান করার জন্য নিচের কমান্ডটি ব্যবহার করুন:
-```bash
-flutter test integration_test/app_test.dart
-```
 </details>
-

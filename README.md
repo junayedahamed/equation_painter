@@ -1,7 +1,7 @@
 # 📈 eq_visualization
- By Junayed Ahamed
+Open Sourced by GitHub user **junayedahamed**
 
-A powerful and performant Flutter package for visualizing multiple mathematical equations simultaneously with beautiful animations and customizable coordinate systems.
+A powerful, interactive, and performant Flutter package for visualizing multiple mathematical equations simultaneously with beautiful animations and a fully customizable coordinate system.
 
 ---
 
@@ -15,27 +15,24 @@ A powerful and performant Flutter package for visualizing multiple mathematical 
 
 <br>
 
-[![Preview](assets/preview.png)](assets/preview.png)
+<div align="center">
+  <img src="https://raw.githubusercontent.com/junayedahamed/eq_visualization/main/assets/preview.png" alt="Preview" width="700">
+</div>
 
-### Features
-
-- ✅ **Coordinate Labels**: Show numbers along axis to measure your functions.
-- ✅ **Configurable Units**: Define how many units each grid square represents (e.g., 1 square = 5 units).
-- ✅ **Dynamic Animations**: Choose from `radial`, `sequential`, `linearX`, or `linearY` animation styles.
-- ✅ **Customizable Coordinate System**: Toggle grids/axes, change colors, and adjust stroke widths.
-- ✅ **Origin Alignment**: Position the origin (0,0) anywhere (Center, BottomLeft, etc.).
-- ✅ **Equation Parser**: Build-in parser to convert string-based formulas (e.g., `y - x^2`) into executable functions in real-time.
-- ✅ **High Performance**: Optimized using `Float32List` and `drawRawPoints` for smooth frame rates.
+### ✨ Features
+- ✅ **New: Interactive Panning**: You can now drag to pan around the coordinate system!
+- ✅ **Robust Equation Parsing**: Type equations like `x^2 + y^2 - 100`, `sin(2x) - y`, `pow(x,2) * atan2(y,x)` directly. It supports implicit multiplication (`2x`), constants (`pi`, `e`), unit +/- and ~20 built-in math functions.
+- ✅ **Coordinate Labels**: Show dynamic numbers along the axis to measure your functions.
+- ✅ **Configurable Units**: Define how many units each grid square represents.
+- ✅ **Dynamic Animations**: Beautiful `radial`, `sequential`, `linearX`, or `linearY` draw mechanics.
+- ✅ **High Performance**: Highly optimized utilizing `Float32List`, `drawRawPoints` and Marching Squares evaluation to preserve silky smooth 60fps framerates.
 
 ### 📸 Screenshots
-
-![Screenshot 1](assets/screenshots/Screenshot%20from%202026-03-19%2001-31-47.png)
-![Screenshot 2](assets/screenshots/Screenshot%20from%202026-03-19%2002-10-56.png)
-![Screenshot 3](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-10.png)
-![Screenshot 4](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-19.png)
-![Screenshot 5](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png)
-![Screenshot 6](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-39.png)
-![Screenshot 7](assets/screenshots/Screenshot%20from%202026-03-19%2003-17-19.png)
+<div style="display: flex; flex-wrap: wrap;">
+  <img src="https://raw.githubusercontent.com/junayedahamed/eq_visualization/main/assets/screenshots/Screenshot%20from%202026-03-19%2001-31-47.png" height="200">
+  <img src="https://raw.githubusercontent.com/junayedahamed/eq_visualization/main/assets/screenshots/Screenshot%20from%202026-03-19%2002-10-56.png" height="200">
+  <img src="https://raw.githubusercontent.com/junayedahamed/eq_visualization/main/assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png" height="200">
+</div>
 
 ### 🚀 Getting Started
 
@@ -43,8 +40,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  eq_visulaization:
-    path: ../eq_visulaization # Use local path or git URL
+  eq_visulaization: ^0.0.1+2
 ```
 
 ### 💡 Usage
@@ -54,12 +50,14 @@ import 'package:eq_visulaization/eq_visulaization.dart';
 
 // ... inside your widget tree
 EquationPainterWidget(
-  width: 400,
+  width: double.infinity,
   height: 400,
+  interactive: true, // Auto pan/zoom enabled!
+  unitsPerSquare: 50.0,
   alignment: Alignment.center,
   equations: [
     EquationConfig(
-      function: (x, y) => x * x + y * y - pow(100, 2), // x^2 + y^2 = 100^2
+      function: EquationParser.parse('x^2 + y^2 - 2500'), // x^2 + y^2 = 50^2
       color: Colors.cyanAccent,
       strokeWidth: 3,
       animationType: AnimationType.radial,
@@ -68,70 +66,26 @@ EquationPainterWidget(
 )
 ```
 
-### 🧮 Equation Parsing
+### 🧮 Enhanced Equation Parsing
 
-You can now parse string-based equations directly using `EquationParser`.
+You can parse string-based equations directly using `EquationParser`. It's highly tolerant!
 
 ```dart
-final userEquation = "tan(20*x) - tan(15*y) + sin(x*y) - 10";
-final mathFunction = EquationParser.parse(userEquation);
+final userEquation = "tan(20x) - tan(15y) + sin(xy) - 10";
+final mathFunction = EquationParser.parseOrNull(userEquation); // Returns null if invalid 
 
-EquationConfig(
-  function: mathFunction,
-  color: Colors.pinkAccent,
-)
+if (mathFunction != null) {
+  EquationConfig(
+    function: mathFunction,
+    color: Colors.pinkAccent,
+  )
+}
 ```
 
-### 🛠 API Reference
-
-#### `EquationPainterWidget`
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `equations` | `List<EquationConfig>` | **Required** | List of equations to draw. |
-| `width`/`height` | `double` | `300` | Canvas dimensions. |
-| `showGrid`/`showAxis`| `bool` | `true` | Toggle coordinate helpers. |
-| `animate` | `bool` | `true` | Enable/disable entry animation. |
-| `animationType` | `AnimationType` | `radial` | Default animation style for equations. |
-| `alignment` | `Alignment` | `center` | Where the (0,0) point is located. |
-| `showNumbers` | `bool` | `true` | Show/hide coordinate values. |
-| `unitsPerSquare`| `double` | `1.0` | Value of one grid square in math units. |
-| `labelColor` | `Color` | `black54` | Color of the coordinate numbers. |
-| `xAxisColor` | `Color` | `black54` | Color of the horizontal axis line. |
-| `yAxisColor` | `Color` | `black54` | Color of the vertical axis line. |
-
-#### `EquationConfig`
-| Property | Type | Description |
-|---|---|---|
-| `function` | `MathFunction` | `(x, y) => double` form of the equation `f(x,y) = 0`. |
-| `color` | `Color` | Color of the curve. |
-| `strokeWidth` | `double` | Width of the curve line. |
-| `animationType` | `AnimationType?` | Overrides widget default for this specific curve. |
-
-#### `AnimationType`
-- `radial`: Revealed from center out.
-- `sequential`: Hand-drawn effect (follows the curve path).
-- `linearX`: Revealed left to right.
-- `linearY`: Revealed top to bottom.
-
-### 🧪 Testing
-
-We have included both unit and E2E (integration) tests to ensure the core logic and visual representation work correctly.
-
-#### **Unit Tests**
-Run unit tests for the equation parser and widget logic:
-```bash
-flutter test
-```
-
-#### **E2E / Integration Tests**
-Run E2E tests using the `integration_test` package:
-```bash
-cd example
-flutter test integration_test/app_test.dart
-```
-
-This verifies the end-to-end flow: opening the app, entering an equation, and visualizing it.
-
+### 🔭 Future Ideas
+- Adding Polar Coordinate system support.
+- Inequality shading support (e.g., `y >= x`).
+- User tapping on graph curves to trace exact X/Y coordinate values dynamically.
 
 </details>
 
@@ -142,24 +96,11 @@ This verifies the end-to-end flow: opening the app, entering an equation, and vi
 <br>
 
 ### বৈশিষ্ট্যসমূহ
-
-- ✅ **স্থানাঙ্ক লেবেল**: ফাংশন পরিমাপ করার জন্য অক্ষে সংখ্যা প্রদর্শন করুন।
-- ✅ **কনফিগারেবল ইউনিট**: প্রতিটি গ্রিড স্কোয়ার কত ইউনিট উপস্থাপন করে তা নির্ধারণ করুন (যেমন: ১ স্কোয়ার = ৫ ইউনিট)।
-- ✅ **ডায়নামিক অ্যানিমেশন**: `radial`, `sequential`, `linearX`, অথবা `linearY` অ্যানিমেশন স্টাইল থেকে বেছে নিন।
-- ✅ **কাস্টমাইজযোগ্য কোঅর্ডিনেট সিস্টেম**: গ্রিড/অক্ষ (Axes) অন-অফ করা, রং পরিবর্তন এবং স্ট্রোক উইডথ অ্যাডজাস্ট করা যায়।
-- ✅ **অরিজিন অ্যালাইনমেন্ট**: অরিজিন (০,০) যেকোনো স্থানে স্থাপন করা যায়।
-- ✅ **ইকুয়েশন পার্সার**: টেক্সট ফরম্যাটে থাকা যে কোনো সমীকরণ (যেমন: `y - x^2`) সরাসরি পার্স করে রিয়েল-টাইমে প্রদর্শন করার সুবিধা।
+- ✅ **নতুন: ইন্টারেক্টিভ প্যানিং**: আপনি এখন গ্রাফে ড্র্যাগ করে চারপাশে প্যান করতে পারেন!
+- ✅ **শক্তিশালী ইকুয়েশন পার্সার**: আপনি এখন সরাসরি `x^2 + y^2 - 100`, `sin(2x) - y` এর মতো সমীকরণ টাইপ করতে পারেন। এটি ಇমপ্লিসিট গুণ (`2x`), ধ্রুবক (`pi`, `e`), এবং ২০টিরও বেশি বিল্ট-ইন গাণিতিক ফাংশন সাপোর্ট করে।
+- ✅ **স্থানাঙ্ক লেবেল**: ফাংশন পরিমাপ করার জন্য ডাইনামিক অক্ষে সংখ্যা প্রদর্শন।
+- ✅ **ডায়নামিক অ্যানিমেশন**: `radial`, `sequential`, `linearX`, অথবা `linearY` অ্যানিমেশন স্টাইল।
 - ✅ **উচ্চ পারফরম্যান্স**: মসৃণ ফ্রেম রেটের জন্য `Float32List` এবং `drawRawPoints` ব্যবহার করে অপ্টিমাইজ করা হয়েছে।
-
-### 📸 স্ক্রিনশটসমূহ
-
-![স্ক্রিনশট ১](assets/screenshots/Screenshot%20from%202026-03-19%2001-31-47.png)
-![স্ক্রিনশট ২](assets/screenshots/Screenshot%20from%202026-03-19%2002-10-56.png)
-![স্ক্রিনশট ৩](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-10.png)
-![স্ক্রিনশট ৪](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-19.png)
-![স্ক্রিনশট ৫](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-27.png)
-![স্ক্রিনশট ৬](assets/screenshots/Screenshot%20from%202026-03-19%2002-11-39.png)
-![স্ক্রিনশট ৭](assets/screenshots/Screenshot%20from%202026-03-19%2003-17-19.png)
 
 ### 🚀 শুরু করা যাক
 
@@ -167,8 +108,7 @@ This verifies the end-to-end flow: opening the app, entering an equation, and vi
 
 ```yaml
 dependencies:
-  eq_visulaization:
-    path: ../eq_visulaization
+  eq_visulaization: ^0.0.1+2
 ```
 
 ### 💡 ব্যবহার পদ্ধতি
@@ -178,12 +118,14 @@ import 'package:eq_visulaization/eq_visulaization.dart';
 
 // ... আপনার উইজেট ট্রির ভেতরে
 EquationPainterWidget(
-  width: 400,
+  width: double.infinity,
   height: 400,
+  interactive: true, // ইন্টারেক্টিভ প্যানিং চালু
+  unitsPerSquare: 50.0,
   alignment: Alignment.center,
   equations: [
     EquationConfig(
-      function: (x, y) => x * x + y * y - pow(100, 2), // x^2 + y^2 = 100^2
+      function: EquationParser.parse('x^2 + y^2 - 2500'),
       color: Colors.cyanAccent,
       strokeWidth: 3,
       animationType: AnimationType.radial,
@@ -192,79 +134,17 @@ EquationPainterWidget(
 )
 ```
 
-### 🧮 ইকুয়েশন পার্সিং (Equation Parsing)
-
-আপনি এখন `EquationParser` ব্যবহার করে সরাসরি সমীকরণ পার্স করতে পারেন।
-
-```dart
-final userEquation = "tan(20*x) - tan(15*y) + sin(x*y) - 10";
-final mathFunction = EquationParser.parse(userEquation);
-
-EquationConfig(
-  function: mathFunction,
-  color: Colors.pinkAccent,
-)
-```
-
-### 🛠 এপিআই রেফারেন্স (API Reference)
-
-#### `EquationPainterWidget`
-| প্রপার্টি | টাইপ | ডিফল্ট | বর্ণনা |
-|---|---|---|---|
-| `equations` | `List<EquationConfig>` | **প্রয়োজনীয়** | আঁকার জন্য সমীকরণের তালিকা। |
-| `width`/`height` | `double` | `300` | ক্যানভাসের আকার। |
-| `showGrid`/`showAxis`| `bool` | `true` | গ্রিড এবং অক্ষ দেখানো বা লুকানো। |
-| `animate` | `bool` | `true` | অ্যানিমেশন চালু বা বন্ধ করা। |
-| `animationType` | `AnimationType` | `radial` | সমীকরণের জন্য ডিফল্ট অ্যানিমেশন স্টাইল। |
-| `alignment` | `Alignment` | `center` | (০,০) বিন্দুটি কোথায় অবস্থিত হবে। |
-| `showNumbers` | `bool` | `true` | স্থানাঙ্ক সংখ্যা দেখানো বা লুকানো। |
-| `unitsPerSquare`| `double` | `1.0` | এক একটি গ্রিড স্কোয়ারের গাণিতিক মান। |
-| `labelColor` | `Color` | `black54` | স্থানাঙ্ক সংখ্যার রং। |
-| `xAxisColor` | `Color` | `black54` | আনুভূমিক অক্ষের (X-axis) রং। |
-| `yAxisColor` | `Color` | `black54` | উলম্ব অক্ষের (Y-axis) রং। |
-
-#### `EquationConfig`
-| প্রপার্টি | টাইপ | বর্ণনা |
-|---|---|---|
-| `function` | `MathFunction` | সমীকরণের `f(x,y) = 0` রূপ। |
-| `color` | `Color` | রেখার রং। |
-| `strokeWidth` | `double` | রেখার পুরুত্ব। |
-| `animationType` | `AnimationType?` | নির্দিষ্ট এই রেখার জন্য অ্যানিমেশন স্টাইল ওভাররাইড করে। |
-
-#### `AnimationType` (অ্যানিমেশন টাইপ)
-- `radial`: কেন্দ্র থেকে বাইরের দিকে প্রকাশ পায়।
-- `sequential`: হাতের ড্রয়িং এফেক্ট (কার্ভ বরাবর এগিয়ে যায়)।
-- `linearX`: বাম থেকে ডানে প্রকাশ পায়।
-- `linearY`: উপর থেকে নিচে প্রকাশ পায়।
-
-### 🧪 টেস্টিং (Testing)
-
-কোর লজিক এবং ভিজ্যুয়াল রিপ্রেজেন্টেশন সঠিকভাবে কাজ করছে কি না তা নিশ্চিত করার জন্য আমরা ইউনিট এবং ই-টু-ই (E2E) ইন্টিগ্রেশন টেস্ট অন্তর্ভুক্ত করেছি।
-
-#### **ইউনিট টেস্ট**
-ইকুয়েশন পার্সার এবং উইজেট লজিক যাচাই করার জন্য ইউনিট টেস্ট রান করুন:
-```bash
-flutter test
-```
-
-#### **E2E / ইন্টিগ্রেশন টেস্ট**
-`integration_test` প্যাকেজ ব্যবহার করে E2E টেস্ট রান করুন:
-```bash
-cd example
-flutter test integration_test/app_test.dart
-```
-
-এটি পুরো ফ্লো-টি যাচাই করে: অ্যাপ ওপেন করা, একটি সমীকরণ ইনপুট দেওয়া এবং এটি ভিজ্যুয়ালাইজ করা।
-
+### 🔭 ভবিষ্যতের আপগ্রেড আইডিয়া
+- পোলার স্থানাঙ্ক ব্যবস্থার (Polar Coordinate) সমর্থন।
+- ইনইকুয়ালিটি শেডিং-এর সমর্থন (যেমন, `y >= x` এর রেন্ডারিং)।
+- রেখায় ট্যাপ করে সঠিক স্থানাঙ্ক (X/Y) বের করার ব্যবস্থা।
 
 </details>
 
 ## 📄 License
-
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
-
 Contributions are welcome! Feel free to open issues or submit pull requests.
 
 ---

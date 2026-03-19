@@ -36,35 +36,35 @@ class EquationVisualizerPage extends StatefulWidget {
 
 class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
   final TextEditingController _equationController = TextEditingController();
+  final TextEditingController _minXController = TextEditingController();
+  final TextEditingController _maxXController = TextEditingController();
+  final TextEditingController _minYController = TextEditingController();
+  final TextEditingController _maxYController = TextEditingController();
 
   // FIX BUG-14: _activeConfig starts null — graph shows "enter equation" hint initially
   EquationConfig? _activeConfig;
 
-  // Track last successfully parsed equation string to avoid redundant rebuilds
-  String _lastParsedEquation = '';
-
   @override
   void dispose() {
     _equationController.dispose();
+    _minXController.dispose();
+    _maxXController.dispose();
+    _minYController.dispose();
+    _maxYController.dispose();
     super.dispose();
   }
 
   void _updateGraph() {
     final equation = _equationController.text.trim();
 
-    // FIX BUG-14: Clear graph when the field is empty
+    // Clear graph when the field is empty
     if (equation.isEmpty) {
       setState(() {
         _activeConfig = null;
-        _lastParsedEquation = '';
       });
       return;
     }
 
-    // Skip redundant re-parses for the same equation text
-    if (equation == _lastParsedEquation) return;
-
-    // FIX BUG-13: Use parseOrNull to detect parse failures and show feedback
     final fn = EquationParser.parseOrNull(equation);
     if (fn == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -81,15 +81,56 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
       return;
     }
 
+    double? parseLimit(String text) {
+      if (text.trim().isEmpty) return null;
+      return double.tryParse(text.trim());
+    }
+
     setState(() {
-      _lastParsedEquation = equation;
       _activeConfig = EquationConfig(
         function: fn,
         color: const Color(0xFF6366F1),
         strokeWidth: 3.0,
         animationType: AnimationType.radial,
+        minX: parseLimit(_minXController.text),
+        maxX: parseLimit(_maxXController.text),
+        minY: parseLimit(_minYController.text),
+        maxY: parseLimit(_maxYController.text),
       );
     });
+  }
+
+  Widget _buildLimitField(String label, TextEditingController controller) {
+    return Expanded(
+      child: TextField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(
+          signed: true,
+          decimal: true,
+        ),
+        style: const TextStyle(
+          fontSize: 14,
+          color: Colors.white,
+          fontFamily: 'monospace',
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+          filled: true,
+          fillColor: Colors.black.withAlpha(50),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 10,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        onSubmitted: (_) => _updateGraph(),
+      ),
+    );
   }
 
   @override
@@ -192,7 +233,10 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                           // Clear button
                           suffixIcon: _equationController.text.isNotEmpty
                               ? IconButton(
-                                  icon: const Icon(Icons.clear, color: Colors.white38),
+                                  icon: const Icon(
+                                    Icons.clear,
+                                    color: Colors.white38,
+                                  ),
                                   onPressed: () {
                                     _equationController.clear();
                                     _updateGraph();
@@ -200,9 +244,20 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                                 )
                               : null,
                         ),
-                        // FIX: also rebuild suffix icon on text change
                         onChanged: (_) => setState(() {}),
                         onSubmitted: (_) => _updateGraph(),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _buildLimitField('Min X', _minXController),
+                          const SizedBox(width: 8),
+                          _buildLimitField('Max X', _maxXController),
+                          const SizedBox(width: 8),
+                          _buildLimitField('Min Y', _minYController),
+                          const SizedBox(width: 8),
+                          _buildLimitField('Max Y', _maxYController),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -274,7 +329,10 @@ class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
                             : EquationPainterWidget(
                                 width: 0, // 0 → fills LayoutBuilder constraint
                                 height: 0, // 0 → fills LayoutBuilder constraint
-                                unitsPerSquare: 50.0,
+                                unitsPerSquare: 10.0,
+                                interactive: false,
+                                showGrid: false,
+                                showAxis: true,
                                 alignment: Alignment.center,
                                 showNumbers: true,
                                 // FIX BUG-11: Use a visible color on dark background
