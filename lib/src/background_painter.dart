@@ -6,7 +6,7 @@ class BackgroundPainter extends CustomPainter {
   final Color gridColor;
   final double gridStrokeWidth;
   final Alignment alignment;
-  final bool showNumbers;
+  final bool showAxisLabel;
   final double unitsPerSquare;
   final Color labelColor;
   final Color xAxisColor;
@@ -18,7 +18,7 @@ class BackgroundPainter extends CustomPainter {
     required this.gridColor,
     required this.gridStrokeWidth,
     required this.alignment,
-    required this.showNumbers,
+    required this.showAxisLabel,
     required this.unitsPerSquare,
     required this.labelColor,
     required this.xAxisColor,
@@ -67,7 +67,7 @@ class BackgroundPainter extends CustomPainter {
         canvas.drawLine(Offset(originX, 0), Offset(originX, h), paint);
       }
 
-      if (showNumbers) {
+      if (showAxisLabel) {
         _drawLabels(canvas, size, originX, originY);
       }
     }
@@ -137,7 +137,7 @@ class BackgroundPainter extends CustomPainter {
 
   String _format(double v) {
     if (v == v.toInt()) return v.toInt().toString();
-    
+
     // Automatically adjust decimal places based on zoom magnitude
     if (v.abs() < 0.01) return v.toStringAsExponential(1);
     if (v.abs() < 0.1) return v.toStringAsFixed(3);
@@ -152,7 +152,7 @@ class BackgroundPainter extends CustomPainter {
         oldDelegate.gridColor != gridColor ||
         oldDelegate.gridStrokeWidth != gridStrokeWidth ||
         oldDelegate.alignment != alignment ||
-        oldDelegate.showNumbers != showNumbers ||
+        oldDelegate.showAxisLabel != showAxisLabel ||
         oldDelegate.unitsPerSquare != unitsPerSquare ||
         oldDelegate.labelColor != labelColor ||
         oldDelegate.xAxisColor != xAxisColor ||

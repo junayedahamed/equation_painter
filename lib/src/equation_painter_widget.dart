@@ -39,7 +39,7 @@ class EquationPainterWidget extends StatefulWidget {
   final Duration animationDuration;
 
   /// Whether to show numerical labels on the axes.
-  final bool showNumbers;
+  final bool showAxisLabel;
 
   /// Initial scale factor: how many mathematical units are represented by one grid square (~40 pixels).
   final double unitsPerSquare;
@@ -58,15 +58,18 @@ class EquationPainterWidget extends StatefulWidget {
 
   /// Initial alignment of the mathematical origin (0,0) within the widget.
   final Alignment alignment;
-  
+
   /// Whether to enable interactive pan and zoom gestures.
   final bool interactive;
+
+  /// Whether to show a hint when no equations are visible.
+  final bool showHint;
 
   const EquationPainterWidget({
     super.key,
     required this.equations,
-    this.width = 300,
-    this.height = 300,
+    this.width = double.infinity,
+    this.height = double.infinity,
     this.showGrid = true,
     this.showAxis = true,
     this.gridColor = const Color(0xFFE0E0E0),
@@ -75,12 +78,13 @@ class EquationPainterWidget extends StatefulWidget {
     this.animationDuration = const Duration(milliseconds: 1500),
     this.animationType = AnimationType.radial,
     this.alignment = Alignment.center,
-    this.showNumbers = true,
-    this.unitsPerSquare = 1.0,
+    this.showAxisLabel = true,
+    this.unitsPerSquare = 100.0,
     this.labelColor = Colors.black54,
     this.xAxisColor = Colors.black54,
     this.yAxisColor = Colors.black54,
     this.interactive = true, // Enabled by default
+    this.showHint = true,
   });
 
   @override
@@ -96,7 +100,7 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
   // Interactive states
   late Offset _currentTranslation;
   late double _currentScale;
-  
+
   // During active gestures, we lower calculation quality for 60fps performance
   bool _isInteracting = false;
 
@@ -105,7 +109,7 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     super.initState();
     _currentTranslation = Offset(widget.alignment.x, widget.alignment.y);
     _currentScale = widget.unitsPerSquare > 0 ? widget.unitsPerSquare : 1.0;
-    
+
     _controller = AnimationController(
       vsync: this,
       duration: widget.animationDuration,
@@ -138,10 +142,10 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
       _controller.forward();
     }
 
-    bool externalStateReset = 
+    bool externalStateReset =
         oldWidget.alignment != widget.alignment ||
         oldWidget.unitsPerSquare != widget.unitsPerSquare;
-        
+
     if (externalStateReset) {
       _currentTranslation = Offset(widget.alignment.x, widget.alignment.y);
       _currentScale = widget.unitsPerSquare > 0 ? widget.unitsPerSquare : 1.0;
@@ -202,7 +206,11 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
     _allPoints = all;
   }
 
-  List<LineSegment> _calculateSegmentsFor(EquationConfig config, double w, double h) {
+  List<LineSegment> _calculateSegmentsFor(
+    EquationConfig config,
+    double w,
+    double h,
+  ) {
     // Dynamic resolution: 4.0 normally, 8.0 during interaction for faster calc
     final double steps = _isInteracting ? 8.0 : 4.0;
 
@@ -297,7 +305,9 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
             final animType = config.animationType ?? widget.animationType;
             switch (animType) {
               case AnimationType.radial:
-                dist = (points[0].dx + points[1].dx).abs() + (points[0].dy + points[1].dy).abs();
+                dist =
+                    (points[0].dx + points[1].dx).abs() +
+                    (points[0].dy + points[1].dy).abs();
                 break;
               case AnimationType.linearX:
                 dist = (points[0].dx + points[1].dx) / 2;
@@ -389,7 +399,7 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
     if (!widget.interactive || _lastSize == null) return;
-    
+
     setState(() {
       final w = _lastSize!.width;
       final h = _lastSize!.height;
@@ -397,7 +407,7 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
       // Pan translation (screen space mapped to [-1, 1] alignment range)
       final dx = details.focalPointDelta.dx / (w / 2);
       final dy = details.focalPointDelta.dy / (h / 2);
-      
+
       _currentTranslation += Offset(dx, dy);
 
       _calculateAllSegments(w, h);
@@ -425,8 +435,14 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final actualWidth = widget.width > 0 && widget.width < constraints.maxWidth ? widget.width : constraints.maxWidth;
-        final actualHeight = widget.height > 0 && widget.height < constraints.maxHeight ? widget.height : constraints.maxHeight;
+        final actualWidth =
+            widget.width > 0 && widget.width < constraints.maxWidth
+            ? widget.width
+            : constraints.maxWidth;
+        final actualHeight =
+            widget.height > 0 && widget.height < constraints.maxHeight
+            ? widget.height
+            : constraints.maxHeight;
 
         final currentSize = Size(actualWidth, actualHeight);
 
@@ -444,42 +460,110 @@ class _EquationPainterWidgetState extends State<EquationPainterWidget>
         Widget content = SizedBox(
           width: actualWidth,
           height: actualHeight,
-          child: Stack(
-            children: [
-              if (widget.showGrid || widget.showAxis)
-                RepaintBoundary(
-                  child: CustomPaint(
-                    size: currentSize,
-                    painter: BackgroundPainter(
-                      showGrid: widget.showGrid,
-                      showAxis: widget.showAxis,
-                      gridColor: widget.gridColor,
-                      gridStrokeWidth: widget.gridStrokeWidth,
-                      alignment: Alignment(_currentTranslation.dx, _currentTranslation.dy),
-                      showNumbers: widget.showNumbers,
-                      unitsPerSquare: _currentScale,
-                      labelColor: widget.labelColor,
-                      xAxisColor: widget.xAxisColor,
-                      yAxisColor: widget.yAxisColor,
-                    ),
+          child: widget.showHint
+              ? SingleChildScrollView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: Column(
+                    children: [
+                      if (widget.showHint)
+                        Positioned(
+                          top: 8,
+                          left: 16,
+                          right: 16,
+                          child: Text(
+                            "if you didn't see any equation draw, try giving large value to unitsPerSquare (e.g. 100)\n",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Theme.of(context).hintColor,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      Stack(
+                        children: [
+                          if (widget.showGrid || widget.showAxis)
+                            RepaintBoundary(
+                              child: CustomPaint(
+                                size: currentSize,
+                                painter: BackgroundPainter(
+                                  showGrid: widget.showGrid,
+                                  showAxis: widget.showAxis,
+                                  gridColor: widget.gridColor,
+                                  gridStrokeWidth: widget.gridStrokeWidth,
+                                  alignment: Alignment(
+                                    _currentTranslation.dx,
+                                    _currentTranslation.dy,
+                                  ),
+                                  showAxisLabel: widget.showAxisLabel,
+                                  unitsPerSquare: _currentScale,
+                                  labelColor: widget.labelColor,
+                                  xAxisColor: widget.xAxisColor,
+                                  yAxisColor: widget.yAxisColor,
+                                ),
+                              ),
+                            ),
+                          AnimatedBuilder(
+                            animation: _controller,
+                            builder: (context, _) {
+                              return CustomPaint(
+                                size: currentSize,
+                                painter: GraphPainter(
+                                  allPoints: _allPoints ?? [],
+                                  equations: widget.equations,
+                                  // Draw fully immediately if user panning/zoomed
+                                  animationProgress: _isInteracting
+                                      ? 1.0
+                                      : _controller.value,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, _) {
-                  return CustomPaint(
-                    size: currentSize,
-                    painter: GraphPainter(
-                      allPoints: _allPoints ?? [],
-                      equations: widget.equations,
-                      // Draw fully immediately if user panning/zoomed
-                      animationProgress: _isInteracting ? 1.0 : _controller.value,
+                )
+              : Stack(
+                  children: [
+                    if (widget.showGrid || widget.showAxis)
+                      RepaintBoundary(
+                        child: CustomPaint(
+                          size: currentSize,
+                          painter: BackgroundPainter(
+                            showGrid: widget.showGrid,
+                            showAxis: widget.showAxis,
+                            gridColor: widget.gridColor,
+                            gridStrokeWidth: widget.gridStrokeWidth,
+                            alignment: Alignment(
+                              _currentTranslation.dx,
+                              _currentTranslation.dy,
+                            ),
+                            showAxisLabel: widget.showAxisLabel,
+                            unitsPerSquare: _currentScale,
+                            labelColor: widget.labelColor,
+                            xAxisColor: widget.xAxisColor,
+                            yAxisColor: widget.yAxisColor,
+                          ),
+                        ),
+                      ),
+                    AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, _) {
+                        return CustomPaint(
+                          size: currentSize,
+                          painter: GraphPainter(
+                            allPoints: _allPoints ?? [],
+                            equations: widget.equations,
+                            // Draw fully immediately if user panning/zoomed
+                            animationProgress: _isInteracting
+                                ? 1.0
+                                : _controller.value,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
+                  ],
+                ),
         );
 
         if (widget.interactive) {
