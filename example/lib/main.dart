@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:eq_visulaization/eq_visulaization.dart';
 
@@ -12,269 +11,349 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Equation Visualization Demo',
+      title: 'Equation Visualizer',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.blue,
         useMaterial3: true,
+        primaryColor: const Color(0xFF6366F1),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF6366F1),
+          brightness: Brightness.dark,
+        ),
       ),
-      home: const EquationDemoPage(),
+      home: const EquationVisualizerPage(),
     );
   }
 }
 
-class EquationExample {
-  final String name;
-  final String formula;
-  final MathFunction function;
-  final Color color;
-  final AnimationType animationType;
-  final double unitsPerSquare;
-
-  EquationExample({
-    required this.name,
-    required this.formula,
-    required this.function,
-    required this.color,
-    this.animationType = AnimationType.radial,
-    this.unitsPerSquare = 50.0,
-  });
-}
-
-class EquationDemoPage extends StatefulWidget {
-  const EquationDemoPage({super.key});
+class EquationVisualizerPage extends StatefulWidget {
+  const EquationVisualizerPage({super.key});
 
   @override
-  State<EquationDemoPage> createState() => _EquationDemoPageState();
+  State<EquationVisualizerPage> createState() => _EquationVisualizerPageState();
 }
 
-class _EquationDemoPageState extends State<EquationDemoPage> {
-  Alignment _alignment = Alignment.center;
-  late List<EquationExample> _examples;
-  late EquationExample _selectedExample;
+class _EquationVisualizerPageState extends State<EquationVisualizerPage> {
+  final TextEditingController _equationController = TextEditingController();
+  final TextEditingController _minXController = TextEditingController();
+  final TextEditingController _maxXController = TextEditingController();
+  final TextEditingController _minYController = TextEditingController();
+  final TextEditingController _maxYController = TextEditingController();
+
+  // FIX BUG-14: _activeConfig starts null — graph shows "enter equation" hint initially
+  EquationConfig? _activeConfig;
 
   @override
-  void initState() {
-    super.initState();
-    _examples = [
-      EquationExample(
-        name: 'Classical Sine Wave',
-        formula: 'y - 60 * sin(x / 30) = 0',
-        function: (x, y) => y - 60 * sin(x / 30),
-        color: Colors.cyanAccent,
-        animationType: AnimationType.linearX,
-        unitsPerSquare: 60,
-      ),
-      EquationExample(
-        name: 'Perfect Circle',
-        formula: 'x² + y² - 100² = 0',
-        function: (x, y) => x * x + y * y - 100 * 100,
-        color: Colors.amberAccent,
+  void dispose() {
+    _equationController.dispose();
+    _minXController.dispose();
+    _maxXController.dispose();
+    _minYController.dispose();
+    _maxYController.dispose();
+    super.dispose();
+  }
+
+  void _updateGraph({bool showErrors = true}) {
+    final equation = _equationController.text.trim();
+
+    // Clear graph when the field is empty
+    if (equation.isEmpty) {
+      setState(() {
+        _activeConfig = null;
+      });
+      return;
+    }
+
+    final fn = EquationParser.parseOrNull(equation);
+    if (fn == null) {
+      if (showErrors && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Invalid equation: "$equation"\nCheck syntax (e.g. x^2 + y^2 - 100)',
+              style: const TextStyle(fontFamily: 'monospace'),
+            ),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
+
+    double? parseLimit(String text) {
+      if (text.trim().isEmpty) return null;
+      return double.tryParse(text.trim());
+    }
+
+    setState(() {
+      _activeConfig = EquationConfig(
+        function: fn,
+        color: const Color(0xFF6366F1),
+        strokeWidth: 3.0,
         animationType: AnimationType.radial,
-        unitsPerSquare: 50,
+        minX: parseLimit(_minXController.text),
+        maxX: parseLimit(_maxXController.text),
+        minY: parseLimit(_minYController.text),
+        maxY: parseLimit(_maxYController.text),
+      );
+    });
+  }
+
+  Widget _buildLimitField(String label, TextEditingController controller) {
+    return Expanded(
+      child: TextField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(
+          signed: true,
+          decimal: true,
+        ),
+        style: const TextStyle(
+          fontSize: 14,
+          color: Colors.white,
+          fontFamily: 'monospace',
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+          filled: true,
+          fillColor: Colors.black.withAlpha(50),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 10,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        onChanged: (_) => _updateGraph(showErrors: false),
+        onSubmitted: (_) => _updateGraph(),
       ),
-      EquationExample(
-        name: 'Mathematical Heart',
-        formula: '(x²+y²-1)³ - x²y³ = 0',
-        function: (x, y) {
-          final nx = x / 80;
-          final ny = y / 80;
-          return pow(nx * nx + ny * ny - 1, 3) - (nx * nx * ny * ny * ny);
-        },
-        color: Colors.redAccent,
-        animationType: AnimationType.sequential,
-        unitsPerSquare: 40,
-      ),
-      EquationExample(
-        name: 'Folium of Descartes',
-        formula: 'x³ + y³ - 3axy = 0',
-        function: (x, y) {
-          const a = 100.0;
-          return x * x * x + y * y * y - 3 * a * x * y;
-        },
-        color: Colors.lightGreenAccent,
-        animationType: AnimationType.sequential,
-        unitsPerSquare: 80,
-      ),
-      EquationExample(
-        name: 'Complex Interference',
-        formula: 'tan(20x) - tan(15y) + sin(xy) + cos(y/x) + ...',
-        function: (x, y) =>
-            tan(20 * x) -
-            tan(15 * y) +
-            sin(x * y) +
-            cos(y / x) +
-            log(1 + x * x + y * y) +
-            (x * x * x - y * y * y) / (x * x + y * y) -
-            10,
-        color: Colors.pinkAccent,
-        animationType: AnimationType.linearX,
-        unitsPerSquare: 50,
-      ),
-    ];
-    _selectedExample = _examples[0];
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Equation Painter'),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        centerTitle: true,
-        actions: [
-          PopupMenuButton<Alignment>(
-            tooltip: 'Change Origin Alignment',
-            icon: const Icon(Icons.grid_view_rounded),
-            onSelected: (val) => setState(() => _alignment = val),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: Alignment.center,
-                child: Text('Center (All Quadrants)'),
-              ),
-              const PopupMenuItem(
-                value: Alignment.bottomLeft,
-                child: Text('1st Quadrant (Bottom Left)'),
-              ),
-              const PopupMenuItem(
-                value: Alignment.bottomRight,
-                child: Text('2nd Quadrant (Bottom Right)'),
-              ),
-              const PopupMenuItem(
-                value: Alignment.topRight,
-                child: Text('3rd Quadrant (Top Right)'),
-              ),
-              const PopupMenuItem(
-                value: Alignment.topLeft,
-                child: Text('4th Quadrant (Top Left)'),
-              ),
-            ],
-          ),
-        ],
-      ),
-      extendBodyBehindAppBar: true,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
+            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Selection Dropdown
+              // Header
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(25),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white10),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<EquationExample>(
-                      value: _selectedExample,
-                      isExpanded: true,
-                      dropdownColor: const Color(0xFF203A43),
-                      borderRadius: BorderRadius.circular(16),
-                      items: _examples
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(
-                                e.name,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() => _selectedExample = val);
-                        }
-                      },
+                padding: const EdgeInsets.all(24.0),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6366F1).withAlpha(40),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.auto_graph_rounded,
+                        color: Color(0xFF818CF8),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 16),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Implicit Equation',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Visualizer',
+                          style: TextStyle(fontSize: 14, color: Colors.white54),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
 
-              // Formula Display
+              // Control Panel
               Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  _selectedExample.formula,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: _selectedExample.color.withAlpha(204),
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withAlpha(127),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(15),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Equation  f(x, y) = 0',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white38,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Example hint
+                      const Text(
+                        'e.g.  x^2 + y^2 - 2500  •  sin(x) - y  •  2x + y - 10',
+                        style: TextStyle(fontSize: 10, color: Colors.white24),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _equationController,
+                        maxLines: 3,
+                        minLines: 1,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontFamily: 'monospace',
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Enter equation, e.g.  x^2 + y^2 - 2500',
+                          hintStyle: const TextStyle(color: Colors.white24),
+                          filled: true,
+                          fillColor: Colors.black.withAlpha(50),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          // Clear button
+                          suffixIcon: _equationController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.clear,
+                                    color: Colors.white38,
+                                  ),
+                                  onPressed: () {
+                                    _equationController.clear();
+                                    _updateGraph();
+                                  },
+                                )
+                              : null,
+                        ),
+                        onChanged: (_) {
+                          setState(() {});
+                          _updateGraph(showErrors: false);
+                        },
+                        onSubmitted: (_) => _updateGraph(),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _buildLimitField('Min X', _minXController),
+                          const SizedBox(width: 8),
+                          _buildLimitField('Max X', _maxXController),
+                          const SizedBox(width: 8),
+                          _buildLimitField('Min Y', _minYController),
+                          const SizedBox(width: 8),
+                          _buildLimitField('Max Y', _maxYController),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _updateGraph,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6366F1),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'Show Graph',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
 
-              // The Visualization Widget
+              const SizedBox(height: 24),
+
+              // Graph
               Expanded(
-                child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   child: Container(
-                    margin: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(32),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withAlpha(76),
+                          color: Colors.black.withAlpha(100),
                           blurRadius: 40,
-                          spreadRadius: 5,
+                          spreadRadius: 10,
                         ),
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(28),
-                      child: EquationPainterWidget(
-                        key: ValueKey('${_selectedExample.name}_$_alignment'),
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.width,
-                        alignment: _alignment,
-                        showNumbers: true,
-                        labelColor: Colors.white,
-                        unitsPerSquare: _selectedExample.unitsPerSquare,
-                        animationDuration: const Duration(milliseconds: 2000),
-                        equations: [
-                          EquationConfig(
-                            function: _selectedExample.function,
-                            color: _selectedExample.color,
-                            strokeWidth: 3.0,
-                            animationType: _selectedExample.animationType,
-                          ),
-                        ],
+                      borderRadius: BorderRadius.circular(32),
+                      child: Container(
+                        color: const Color(0xFF0F172A),
+                        child: _activeConfig == null
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.functions_rounded,
+                                      size: 48,
+                                      color: Colors.white10,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    const Text(
+                                      'Enter an equation above and tap "Show Graph"',
+                                      style: TextStyle(color: Colors.white24),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            // FIX BUG-12: Use 0 (fills constraints) instead of MediaQuery
+                            // so the LayoutBuilder inside EquationPainterWidget correctly
+                            // receives the available space from Expanded.
+                            : EquationPainterWidget(
+                                width: 0, // 0 → fills LayoutBuilder constraint
+                                height: 0, // 0 → fills LayoutBuilder constraint
+                                unitsPerSquare: 10.0,
+                                interactive: false,
+                                showGrid: false,
+                                showAxis: true,
+                                alignment: Alignment.center,
+                                showNumbers: true,
+                                // FIX BUG-11: Use a visible color on dark background
+                                labelColor: Colors.white38,
+                                xAxisColor: Colors.white24,
+                                yAxisColor: Colors.white24,
+                                gridColor: Colors.white.withAlpha(10),
+                                equations: [_activeConfig!],
+                                animationDuration: const Duration(
+                                  milliseconds: 1500,
+                                ),
+                                animate: true,
+                              ),
                       ),
                     ),
-                  ),
-                ),
-              ),
-
-              const Padding(
-                padding: EdgeInsets.only(bottom: 24, left: 40, right: 40),
-                child: Text(
-                  "Interactive implicit equation rendering in real-time.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontStyle: FontStyle.italic,
                   ),
                 ),
               ),
