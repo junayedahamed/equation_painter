@@ -638,8 +638,11 @@ class _EquationPainterState extends State<EquationPainter>
   }
 
   void _onTapDown(TapDownDetails details) {
-    if (widget.onPointTapped == null || _allPoints == null || _lastSize == null)
+    if (widget.onPointTapped == null ||
+        _allPoints == null ||
+        _lastSize == null) {
       return;
+    }
 
     final Size size = _lastSize!;
     final double originX = (1 + _currentTranslation.dx) * size.width / 2;
