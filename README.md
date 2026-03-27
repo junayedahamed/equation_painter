@@ -1,5 +1,13 @@
+<a href="https://github.com/junayedahamed/equation_painter" target="_blank">
+<div align="center">
+  <img src="assets/logo/logo_eq_painter.png" alt="logo" width="400" 
+  height="250",
+  style="mix-blend-mode: screen;
+ ">
+</div></a>
+
 # 📈 equation_painter
-Open Sourced by GitHub user **junayedahamed**
+Open Sourced by GitHub user **[junayedahamed](https://github.com/junayedahamed)**
 
 A powerful, interactive, and performant Flutter package for visualizing multiple mathematical equations simultaneously with beautiful animations and a fully customizable coordinate system.
 
