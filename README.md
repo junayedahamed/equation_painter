@@ -1,7 +1,7 @@
 <div align="center">
   <a href="https://github.com/junayedahamed/equation_painter" target="_blank">
     <img src="assets/logo/logo_eq_painter.png" alt="logo" width="100%" 
-   height="250"
+   height="350"
    style="mix-blend-mode: screen;">
   </a>
 </div>
