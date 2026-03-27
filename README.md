@@ -1,10 +1,8 @@
-<a href="https://github.com/junayedahamed/equation_painter" target="_blank">
 <div align="center">
-  <img align="center" src="assets/logo/logo_eq_painter.png" alt="logo" width="400" 
-  height="250",
-  style="mix-blend-mode: screen;
- ">
-</div></a>
+  <a href="https://github.com/junayedahamed/equation_painter" target="_blank">
+    <img src="assets/logo/logo_eq_painter.png" alt="logo" width="100%" style="mix-blend-mode: screen;">
+  </a>
+</div>
 
 # 📈 equation_painter
 Open Sourced by GitHub user **[junayedahamed](https://github.com/junayedahamed)**
