@@ -1,6 +1,6 @@
 <a href="https://github.com/junayedahamed/equation_painter" target="_blank">
 <div align="center">
-  <img src="assets/logo/logo_eq_painter.png" alt="logo" width="400" 
+  <img align="center" src="assets/logo/logo_eq_painter.png" alt="logo" width="400" 
   height="250",
   style="mix-blend-mode: screen;
  ">
