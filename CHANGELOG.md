@@ -1,3 +1,7 @@
+## 0.1.0+5
+
+* Updated README with new logo and
+ 
 ## 0.1.0+4
 
 * Updated README with new logo and profile links.
