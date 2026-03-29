@@ -34,6 +34,7 @@ A powerful, interactive, and performant Flutter package for visualizing multiple
 - ✅ **New: Tap & Hover to Inspect**: Tap or hover on any curve to see the exact (x, y) or (r, theta) coordinates.
 - ✅ **Robust Equation Parsing**: Type equations like `x^2 + y^2 - 100`, `sin(2x) - y`, `pow(x,2) * atan2(y,x)` directly. It supports implicit multiplication (`2x`), constants (`pi`, `e`), unit +/- and ~20 built-in math functions.
 - ✅ **Coordinate Labels**: Show dynamic numbers along the axis to measure your functions.
+- ✅ **Customizable Unit Scale**: By default, each grid square represents 100 units, but you can adjust this to your specific needs.
 - ✅ **Configurable Units**: Define how many units each grid square represents.
 - ✅ **Dynamic Animations**: Beautiful `radial`, `sequential`, `linearX`, or `linearY` draw mechanics.
 - ✅ **High Performance**: Highly optimized utilizing `Float32List`, `drawRawPoints` and Marching Squares evaluation to preserve silky smooth 60fps framerates.
@@ -149,6 +150,7 @@ This project is licensed under the MIT License.
 - ✅ **নতুন: ইনইকুয়ালিটি ভিজ্যুয়ালাইজেশন**: $y \ge x$ বা $x^2 + y^2 \le 25$ এর মতো অসমতা শেডিংয়ের মাধ্যমে প্রদর্শন।
 - ✅ **নতুন: ট্যাপ ও হোভার ইন্সপেকশন**: কার্ভের যেকোনো স্থানে ট্যাপ বা হোভার করে তাৎক্ষণিকভাবে $(x, y)$ বা $(r, theta)$ স্থানাঙ্ক দেখা।
 - ✅ **শক্তিশালী ইকুয়েশন পার্সার**: আপনি এখন সরাসরি `x^2 + y^2 - 100`, `sin(2x) - y` এর মতো সমীকরণ টাইপ করতে পারেন। এটি ಇমপ্লিসিট গুণ (`2x`), ধ্রুবক (`pi`, `e`), এবং ২০টিরও বেশি বিল্ট-ইন গাণিতিক ফাংশন সাপোর্ট করে।
+- ✅ **কাস্টমাইজযোগ্য ইউনিট স্কেল**: ডিফল্টভাবে প্রতিটি গ্রিড স্কয়ার ১০০ ইউনিট প্রতিনিধিত্ব করে, তবে আপনি আপনার প্রয়োজন অনুযায়ী এটি পরিবর্তন করতে পারবেন।
 - ✅ **স্থানাঙ্ক লেবেল**: ফাংশন পরিমাপ করার জন্য ডাইনামিক অক্ষেপে সংখ্যা প্রদর্শন।
 - ✅ **কাস্টমাইজযোগ্য গ্রিড**: প্রতিটি গ্রিড স্কয়ার কতটুকু ইউনিটের প্রতিনিধিত্ব করবে তা আপনি নিজেই ঠিক করতে পারবেন।
 - ✅ **ডায়নামিক অ্যানিমেশন**: `radial`, `sequential`, `linearX`, অথবা `linearY` স্টাইল ব্যবহার করে কার্ভ আঁকার প্রক্রিয়া অ্যানিমেট করা।
