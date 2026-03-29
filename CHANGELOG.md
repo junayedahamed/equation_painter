@@ -1,5 +1,10 @@
 ## 0.1.0+5
 
+* Updated README with new example screenshots showcasing heart curve and cosine wave with value inspection.
+* Version bump for minor updates and improved documentation.
+ 
+## 0.1.0+5
+
 * Updated README with new logo and
  
 ## 0.1.0+4
