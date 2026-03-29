@@ -61,7 +61,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  equation_painter: ^0.0.1+2
+  equation_painter: ^0.1.0+7
 ```
 
 ### 💡 Usage

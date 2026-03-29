@@ -1,14 +1,5 @@
 # Installing equation_painter
 
-### 🌐 Select Language / ভাষা নির্বাচন
-**[English](#english) | [বাংলা](#bangla)**
-
----
-
-<details open id="english">
-<summary><b>🇬🇧 English Installation (Click to Expand)</b></summary>
-<br>
-
 You can add the `equation_painter` package to your Flutter project using several methods.
 
 ### Method 1: Using the Flutter CLI (Recommended)
@@ -28,7 +19,7 @@ flutter pub add equation_painter
 dependencies:
   flutter:
     sdk: flutter
-  equation_painter: ^0.0.1+1 # Current version
+  equation_painter: ^0.1.0+7 # Current version
 ```
 
 3. Save the file and run:
@@ -53,34 +44,5 @@ Once installed, you can import and use the package in your Dart code:
 ```dart
 import 'package:equation_painter/equation_painter.dart';
 ```
-</details>
 
-<br>
-
-<details id="bangla">
-<summary><b>🇧🇩 ইন্সটল করার নিয়ম (বিস্তারিত দেখতে ক্লিক করুন)</b></summary>
-<br>
-
-আপনি নিচের সহজ ধাপগুলো অনুসরণ করে আপনার ফ্লাটার প্রজেক্টে `equation_painter` প্যাকেজটি যোগ করতে পারেন।
-
-### ১. ফ্লাটার CLI ব্যবহার করে (সবচেয়ে সহজ):
-
-আপনার প্রজেক্টের রুট ডিরেক্টরিতে নিচের কমান্ডটি রান করুন:
-```bash
-flutter pub add equation_painter
-```
-
-### ২. `pubspec.yaml` এর মাধ্যমে:
-
-১. আপনার প্রজেক্টের `pubspec.yaml` ফাইলটি খুলুন।
-২. `dependencies` সেকশনে `equation_painter: ^0.0.1+1` যোগ করুন।
-৩. এরপর ফাইলটি সেভ করে `flutter pub get` কমান্ডটি রান করুন অথবা আপনার IDE-র টুল ব্যবহার করুন।
-
-### ৩. প্যাকেজটি ডার্ট ফাইলে ইম্পোর্ট করা:
-
-ইন্সটল হওয়ার পর নিচের লাইনটি দিয়ে আপনার কোডে প্যাকেজটি ব্যবহার করতে পারেন:
-```dart
-import 'package:equation_painter/equation_painter.dart';
-```
-</details>
 

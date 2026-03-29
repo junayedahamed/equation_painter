@@ -1,3 +1,8 @@
+## 0.1.0+7
+
+* Updated README with new example screenshots showcasing heart curve and cosine wave with value inspection.
+* Removed Bangla text from README for consistency.
+
 ## 0.1.0+6
 
 * Updated README with new example screenshots showcasing heart curve and cosine wave with value inspection.

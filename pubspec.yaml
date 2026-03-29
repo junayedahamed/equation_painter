@@ -1,6 +1,6 @@
 name: equation_painter
 description: High-performance Flutter widget for visualizing multiple mathematical equations simultaneously with beautiful reveal animations and a customizable coordinate system.
-version: 0.1.0+6
+version: 0.1.0+7
 homepage: https://github.com/junayedahamed/equation_painter
 repository: https://github.com/junayedahamed/equation_painter
 issue_tracker: https://github.com/junayedahamed/equation_painter/issues
