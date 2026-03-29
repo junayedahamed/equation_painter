@@ -1,4 +1,4 @@
-## 0.1.0+5
+## 0.1.0+6
 
 * Updated README with new example screenshots showcasing heart curve and cosine wave with value inspection.
 * Version bump for minor updates and improved documentation.
